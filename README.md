@@ -1,1 +1,1 @@
-# lsminer
+# lsminer for linux
