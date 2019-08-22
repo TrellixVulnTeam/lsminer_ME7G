@@ -14,6 +14,6 @@ while True:
             time.sleep(60)
     except Exception as e:
         print("main loop run exception. msg: " + str(e))
-        print("sleep 3 second and retry.")
+        print("sleep 3 seconds and retry.")
         time.sleep(3)
 
