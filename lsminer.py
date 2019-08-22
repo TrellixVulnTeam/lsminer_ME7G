@@ -37,3 +37,23 @@ def getReboot(url):
     except Exception as e:
         print("function getReboot exception. msg: " + str(e))
         return 0
+
+def getNvidiaCount():
+    '''获取NVIDIA显卡的数量'''
+    count = 0
+    pci = os.popen('lspci').read().splitlines(False)
+    for l in pci:
+        if 'VGA' in l or '3D controller' in l:
+            if 'NVIDIA' in l and 'nForce' not in l:
+                count += 1
+    return count
+
+def getAMDCount():
+    '''获取AMD显卡的数量'''
+    count = 0
+    pci = os.popen('lspci').read().splitlines(False)
+    for l in pci:
+        if 'VGA' in l or '3D controller' in l:
+            if 'Advanced Micro Devices' in l and 'RS880' not in l:
+                count += 1
+    return count

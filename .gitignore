@@ -1,1 +1,3 @@
 .vscode/settings.json
+.vscode/launch.json
+__pycache__/lsminer.cpython-36.pyc
