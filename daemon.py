@@ -6,7 +6,12 @@ from lsminer import *
 while True:
     try:
         cfg = loadCfg()
-        url = cfg['reboot'] + md5(getMac())
+        if cfg == 0:
+            raise ValueError('loadcfg error!')
+        if 'reboot' in cfg:
+            url = cfg['reboot'] + getWkid()
+        else:
+            raise ValueError('config file error!')
         reboot = getReboot(url)
         if reboot:
             os.system("reboot")

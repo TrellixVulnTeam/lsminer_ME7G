@@ -4,5 +4,7 @@
     "reboot": "http://api.lsminer.com:37124/redline/",
     "accesskey":"",
     "wkid":"",
-    "wkname":""
+    "wkname":"",
+    "appver":"1000000",
+    "driverver":"230"
 }

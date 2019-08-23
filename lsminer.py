@@ -22,11 +22,20 @@ def getIp():
 
 def loadCfg():
     '''加载当前目录下的配置文件config.json'''
-    return json.load(open("config.json", "r", encoding="utf-8"))
+    try:
+        cfg = json.load(open("config.json", "r", encoding="utf-8"))
+    except Exception as e:
+        print("function loadCfg exception. msg: " + str(e))
+        return 0
+    return cfg
 
 def md5(data):
     '''MD5哈希函数'''
     return str(hashlib.md5(data.encode('utf-8')).hexdigest())
+
+def getWkid():
+    '''获取Wkid(网卡MAC字符串MD5哈希值)'''
+    return md5(getMac())
 
 def getReboot(url):
     '''检测是否需要重启系统'''
@@ -57,3 +66,17 @@ def getAMDCount():
             if 'Advanced Micro Devices' in l and 'RS880' not in l:
                 count += 1
     return count
+
+def getVedioCard():
+    '''获取显卡列表'''
+    cardstr = ""
+    pci = os.popen('lspci').read().splitlines(False)
+    for l in pci:
+        if 'VGA' in l or '3D controller' in l:
+            name = l.split(': ')[1].strip()
+            if cardstr:
+                cardstr = cardstr + "|" + name
+            else:
+                cardstr = name
+    return cardstr
+    
