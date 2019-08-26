@@ -12,6 +12,7 @@ import threading
 logging.basicConfig(level = logging.INFO,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+#commond queue
 q = queue.Queue(0)
 
 class lsminerClient(object):
@@ -26,7 +27,7 @@ class lsminerClient(object):
     def getResp(self):
         pass
 
-    def loginSrv(self):
+    def sendLoginReq(self):
         n = getNvidiaCount()
         a = getAMDCount()
         reqData = {}
@@ -41,12 +42,16 @@ class lsminerClient(object):
         reqData['driverver'] = self.cfg['driverver']
 
         reqjson = json.dumps(reqData)
-        logging.info(reqjson)
         self.sock = socket.create_connection((self.cfg['ip'], self.cfg['port']), 3)
         self.sock.setblocking(True)
         self.sock.settimeout(None)
         self.sock.sendall(reqjson.encode("utf-8"))
 
+    def sendGetMinerArgsReq(self):
+        reqData = {}
+        reqData['method'] = 2
+        reqjson = json.dumps(reqData)
+        self.sock.sendall(reqjson.encode("utf-8"))
 
     def loadCfg(self):
         self.cfg = loadCfg()
@@ -55,16 +60,39 @@ class lsminerClient(object):
         if 'ip' not in self.cfg or 'port' not in self.cfg:
             raise ValueError('config file error. missing ip or port!')
 
+    def onLoginResp(self, msg):
+        if 'result' in msg and msg['result']:
+            logging.info('login ok.')
+            q.put(2)
+        else:
+            logging.info('login error. msg: ' + msg['error'])
+            q.put(1)
+    
+    def onGetMinerArgs(self, msg):
+        if 'result' in msg and msg['result']:
+            logging.info('get miner args ok.')
+            
+        else:
+            logging.info('get miner args error. msg: ' + msg['error'])
+            q.put(2)
+
+    def onReportResp(self, msg):
+        pass
+
+    def onUpdateMinerArgs(self, msg):
+        logging.info('recv update miner args commond.')
+        q.put(2)
+
     def processMsg(self, msg):
         if 'method' in msg:
             if msg['method'] == 1:
-                pass
+                self.onLoginResp(msg)
             elif msg['method'] == 2:
-                pass
+                self.onGetMinerArgs(msg)
             elif msg['method'] == 3:
-                pass
+                self.onReportResp(msg)
             elif msg['method'] == 4:
-                pass
+                self.onUpdateMinerArgs(msg)
             elif msg['method'] == 5:
                 pass
             elif msg['method'] == 6:
@@ -86,16 +114,16 @@ class lsminerClient(object):
             elif msg['method'] == 14:
                 pass
             else:
-                print('unknown server msg method! msg: ' + str(msg))
+                logging.info('unknown server msg method! msg: ' + str(msg))
         else:
-            print('unknown server msg! msg: ' + str(msg))
+            logging.info('unknown server msg! msg: ' + str(msg))
 
 
     def recvThread(self):
         buffer = []
         while True:
             if self.sock == None:
-                print('client socket == None. sleep one second.')
+                logging.info('client socket == None. sleep one second.')
                 time.sleep(1)
                 continue
 
@@ -108,19 +136,24 @@ class lsminerClient(object):
                     self.processMsg(msg)
                     buffer.clear()
                 except Exception as e:
-                    print('recv thread exception. msg: ' + str(e))
-                    print('json.loads server data exception.')
+                    logging.info('recv thread exception. msg: ' + str(e))
+                    logging.info('json.loads server data exception.')
             else:
-                print('server close socket. exit recv thread.')
+                logging.info('server close socket. exit recv thread.')
                 self.sock.close()
                 break
 
+    '''cmd list: 1 == login, 2 == get miner args'''
     def processCmd(self, cmd):
-        pass
+        if cmd == 1:
+            self.sendLoginReq()
+        elif cmd == 2:
+            self.sendGetMinerArgsReq()
+        else:
+            logging.error('unknown cmd. cmd: ' + str(cmd))
 
     def init(self):
         self.loadCfg()
-        #self.loginSrv()
         thread = threading.Thread(target=lsminerClient.recvThread, args=(self,))
         thread.start()
 
@@ -131,8 +164,8 @@ class lsminerClient(object):
                 cmd = q.get()
                 self.processCmd(cmd)
             except Exception as e:
-                print("main loop run exception. msg: " + str(e))
-                print("sleep 3 seconds and retry...")
+                logging.info("main loop run exception. msg: " + str(e))
+                logging.info("sleep 3 seconds and retry...")
                 time.sleep(3)
 
 
