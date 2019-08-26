@@ -23,9 +23,6 @@ class lsminerClient(object):
 
     def __del__(self):
         pass
-    
-    def getResp(self):
-        pass
 
     def connectSrv(self):
         self.sock = socket.create_connection((self.cfg['ip'], self.cfg['port']), 3)
@@ -33,25 +30,33 @@ class lsminerClient(object):
         self.sock.settimeout(None)
 
     def sendLoginReq(self):
-        n = getNvidiaCount()
-        a = getAMDCount()
-        reqData = {}
-        reqData['method'] = 1
-        reqData['accesskey'] = self.cfg['accesskey']
-        reqData['wkname'] = self.cfg['wkname']
-        reqData['wkid'] = getWkid()
-        reqData['devicename'] = getVedioCard()
-        reqData['devicecnt'] = a + n
-        reqData['appver'] = self.cfg['appver']
-        reqData['platform'] = 1 if n > a else 2
-        reqData['driverver'] = self.cfg['driverver']
-        reqjson = json.dumps(reqData)
-        self.sock.sendall(reqjson.encode("utf-8"))
+        try:
+            n = getNvidiaCount()
+            a = getAMDCount()
+            reqData = {}
+            reqData['method'] = 1
+            reqData['accesskey'] = self.cfg['accesskey']
+            reqData['wkname'] = self.cfg['wkname']
+            reqData['wkid'] = getWkid()
+            reqData['devicename'] = getVedioCard()
+            reqData['devicecnt'] = a + n
+            reqData['appver'] = self.cfg['appver']
+            reqData['platform'] = 1 if n > a else 2
+            reqData['driverver'] = self.cfg['driverver']
+            reqData['os'] = self.cfg['os']
+            reqjson = json.dumps(reqData)
+            reqjson += '\r\n'
+            self.sock.sendall(reqjson.encode("utf-8"))
+        except Exception as e:
+            logging.error('sendLoginReq exception. msg: ' + str(e))
+        
 
     def sendGetMinerArgsReq(self):
         reqData = {}
         reqData['method'] = 2
+        reqData['os'] = self.cfg['os']
         reqjson = json.dumps(reqData)
+        reqjson += '\r\n'
         self.sock.sendall(reqjson.encode("utf-8"))
 
     def loadCfg(self):

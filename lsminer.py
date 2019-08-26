@@ -49,6 +49,7 @@ def getReboot(url):
 
 def getNvidiaCount():
     '''获取NVIDIA显卡的数量'''
+    return 1
     count = 0
     pci = os.popen('lspci').read().splitlines(False)
     for l in pci:
@@ -59,6 +60,7 @@ def getNvidiaCount():
 
 def getAMDCount():
     '''获取AMD显卡的数量'''
+    return 0
     count = 0
     pci = os.popen('lspci').read().splitlines(False)
     for l in pci:
@@ -69,6 +71,7 @@ def getAMDCount():
 
 def getVedioCard():
     '''获取显卡列表'''
+    return 'GeForce GTX 1060'
     cardstr = ""
     pci = os.popen('lspci').read().splitlines(False)
     for l in pci:
