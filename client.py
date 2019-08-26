@@ -60,6 +60,10 @@ class lsminerClient(object):
         if 'ip' not in self.cfg or 'port' not in self.cfg:
             raise ValueError('config file error. missing ip or port!')
 
+    def onWelcome(self, msg):
+        logging.info('connect server ok. recv server msg: ' + msg['message'])
+        q.put(1)
+
     def onLoginResp(self, msg):
         if 'result' in msg and msg['result']:
             logging.info('login ok.')
@@ -71,7 +75,6 @@ class lsminerClient(object):
     def onGetMinerArgs(self, msg):
         if 'result' in msg and msg['result']:
             logging.info('get miner args ok.')
-            
         else:
             logging.info('get miner args error. msg: ' + msg['error'])
             q.put(2)
@@ -102,7 +105,7 @@ class lsminerClient(object):
             elif msg['method'] == 8:
                 pass
             elif msg['method'] == 9:
-                pass
+                self.onWelcome(msg)
             elif msg['method'] == 10:
                 pass
             elif msg['method'] ==11:
@@ -158,7 +161,6 @@ class lsminerClient(object):
         thread.start()
 
     def run(self):
-        q.put(1)
         while True:
             try:
                 cmd = q.get()
