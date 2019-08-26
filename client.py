@@ -27,6 +27,11 @@ class lsminerClient(object):
     def getResp(self):
         pass
 
+    def connectSrv(self):
+        self.sock = socket.create_connection((self.cfg['ip'], self.cfg['port']), 3)
+        self.sock.setblocking(True)
+        self.sock.settimeout(None)
+
     def sendLoginReq(self):
         n = getNvidiaCount()
         a = getAMDCount()
@@ -40,11 +45,7 @@ class lsminerClient(object):
         reqData['appver'] = self.cfg['appver']
         reqData['platform'] = 1 if n > a else 2
         reqData['driverver'] = self.cfg['driverver']
-
         reqjson = json.dumps(reqData)
-        self.sock = socket.create_connection((self.cfg['ip'], self.cfg['port']), 3)
-        self.sock.setblocking(True)
-        self.sock.settimeout(None)
         self.sock.sendall(reqjson.encode("utf-8"))
 
     def sendGetMinerArgsReq(self):
@@ -62,29 +63,29 @@ class lsminerClient(object):
 
     def onWelcome(self, msg):
         logging.info('connect server ok. recv server msg: ' + msg['message'])
-        q.put(1)
+        q.put(2)
 
     def onLoginResp(self, msg):
         if 'result' in msg and msg['result']:
             logging.info('login ok.')
-            q.put(2)
+            q.put(3)
         else:
             logging.info('login error. msg: ' + msg['error'])
-            q.put(1)
+            q.put(2)
     
     def onGetMinerArgs(self, msg):
         if 'result' in msg and msg['result']:
             logging.info('get miner args ok.')
         else:
             logging.info('get miner args error. msg: ' + msg['error'])
-            q.put(2)
+            q.put(3)
 
     def onReportResp(self, msg):
         pass
 
     def onUpdateMinerArgs(self, msg):
         logging.info('recv update miner args commond.')
-        q.put(2)
+        q.put(3)
 
     def processMsg(self, msg):
         if 'method' in msg:
@@ -133,6 +134,7 @@ class lsminerClient(object):
             rd = self.sock.recv(4096).decode()
             if rd:
                 buffer.append(rd)
+                rd = None
                 data = ''.join(buffer)
                 try:
                     msg = json.loads(data)
@@ -146,11 +148,13 @@ class lsminerClient(object):
                 self.sock.close()
                 break
 
-    '''cmd list: 1 == login, 2 == get miner args'''
+    '''cmd list: 1 == connect server, 2 == login server, 3 == get miner config'''
     def processCmd(self, cmd):
         if cmd == 1:
-            self.sendLoginReq()
+            self.connectSrv()
         elif cmd == 2:
+            self.sendLoginReq()
+        elif cmd == 3:
             self.sendGetMinerArgsReq()
         else:
             logging.error('unknown cmd. cmd: ' + str(cmd))
@@ -161,6 +165,7 @@ class lsminerClient(object):
         thread.start()
 
     def run(self):
+        q.put(1)
         while True:
             try:
                 cmd = q.get()
