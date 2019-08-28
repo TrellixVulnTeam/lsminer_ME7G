@@ -8,9 +8,18 @@ import os
 import logging
 import queue
 import threading
+import sys
+import subprocess
+import shlex
 
 logging.basicConfig(level = logging.INFO,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+
+subprocess = subprocess.Popen('ping www.baidu.com -t', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+for line in iter(subprocess.stdout.readline, ''):
+    print(line.decode('gbk'))
+
 
 #commond queue
 q = queue.Queue(0)
@@ -20,14 +29,22 @@ class lsminerClient(object):
         self.state = None
         self.cfg = None
         self.sock = None
+        self.minerargs = None
+        self.minerpath = None
+        self.subprocess = None
 
     def __del__(self):
         pass
 
     def connectSrv(self):
-        self.sock = socket.create_connection((self.cfg['ip'], self.cfg['port']), 3)
-        self.sock.setblocking(True)
-        self.sock.settimeout(None)
+        try:
+            self.sock = socket.create_connection((self.cfg['ip'], self.cfg['port']), 3)
+            self.sock.setblocking(True)
+            self.sock.settimeout(None)
+        except Exception as e:
+            logging.error('connectSrv exception. msg: ' + str(e))
+            time.sleep(3)
+            q.put(1)
 
     def sendLoginReq(self):
         try:
@@ -78,9 +95,32 @@ class lsminerClient(object):
             logging.info('login error. msg: ' + msg['error'])
             q.put(2)
     
+    def reportThread(self):
+        pass
+    
+    def minerThread(self):
+        args = []
+        args.append(self.minerpath)
+        minerargs = shlex.split(self.minerargs['customize'])
+        args.extend(minerargs)
+        self.subprocess = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        thread = threading.Thread(target=lsminerClient.reportThread, args=(self,))
+        thread.start()
+        for line in iter(self.subprocess.stdout.readline(), ''):
+            print(line.decode('gbk'))
+        if self.subprocess.returncode < 0:
+            logging.info('miner terminated.')
+        else:
+            q.put(3)
+
     def onGetMinerArgs(self, msg):
         if 'result' in msg and msg['result']:
             logging.info('get miner args ok.')
+            self.minerargs = msg
+            if self.subprocess and self.subprocess.poll is None:
+                self.subprocess.terminate()
+            thread = threading.Thread(target=lsminerClient.minerThread, args=(self,))
+            thread.start()
         else:
             logging.info('get miner args error. msg: ' + msg['error'])
             q.put(3)
