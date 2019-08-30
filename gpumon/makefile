@@ -2,9 +2,9 @@ TARGET  := libgpumon.so
 
 #compile and lib parameter
 #编译参数
-CC      := gcc
+CC      := g++
 LIBS    :=
-LDFLAGS :=
+LDFLAGS := -lstdc++
 DEFINES :=
 INCLUDE := -I.
 CFLAGS  := -g -Wall -O3 -fPIC $(DEFINES) $(INCLUDE)

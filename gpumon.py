@@ -1,9 +1,10 @@
+import os 
 from cffi import FFI
 
 ffi = FFI()
-lib = ffi.dlopen('./libatiadlxx.so')
+
 ffi.cdef('''
-    typedef void wrap_nvml_handle
+    typedef void wrap_nvml_handle;
     wrap_nvml_handle* wrap_nvml_create();
     int wrap_nvml_destroy(wrap_nvml_handle* nvmlh);
     int wrap_nvml_get_gpucount(wrap_nvml_handle* nvmlh, int* gpucount);
@@ -12,25 +13,7 @@ ffi.cdef('''
     int wrap_nvml_get_fanpcnt(wrap_nvml_handle* nvmlh, int gpuindex, unsigned int* fanpcnt);
     int wrap_nvml_get_power_usage(wrap_nvml_handle* nvmlh, int gpuindex, unsigned int* milliwatts);
 
-    typedef void wrap_amdsysfs_handle
-    typedef struct _pciInfo
-    {
-        int DeviceId = -1;
-        int HwMonId = -1;
-        int PciDomain = -1;
-        int PciBus = -1;
-        int PciDevice = -1;
-    } pciInfo;
-
-    wrap_amdsysfs_handle* wrap_amdsysfs_create();
-    int wrap_amdsysfs_destroy(wrap_amdsysfs_handle* sysfsh);
-    int wrap_amdsysfs_get_gpucount(wrap_amdsysfs_handle* sysfsh, int* gpucount);
-    int wrap_amdsysfs_get_tempC(wrap_amdsysfs_handle* sysfsh, int index, unsigned int* tempC);
-    int wrap_amdsysfs_get_fanpcnt(wrap_amdsysfs_handle* sysfsh, int index, unsigned int* fanpcnt);
-    int wrap_amdsysfs_get_power_usage(wrap_amdsysfs_handle* sysfsh, int index, unsigned int* milliwatts);
-    int wrap_amdsysfs_get_pciInfo(wrap_amdsysfs_handle* sysfsh, int index, pciInfo* info);
-
-    typedef void wrap_adl_handle
+    typedef void wrap_adl_handle;
     wrap_adl_handle* wrap_adl_create();
     int wrap_adl_destroy(wrap_adl_handle* adlh);
     int wrap_adl_get_gpucount(wrap_adl_handle* adlh, int* gpucount);
@@ -41,3 +24,55 @@ ffi.cdef('''
     int wrap_adl_get_power_usage(wrap_adl_handle* adlh, int gpuindex, unsigned int* milliwatts);
 
 ''')
+              
+#dirs = os.path.split(os.path.realpath(__file__))[0]                   
+lib = ffi.dlopen('./gpumon/libgpumon.so')
+
+nvHandle = lib.wrap_nvml_create()
+amdHandle = lib.wrap_adl_create()
+
+def nvmlGetGpuInfo():
+    info = []
+    if nvHandle:
+        count = ffi.new("int*", 0)
+        lib.wrap_nvml_get_gpucount(nvHandle, count)
+        deviceinfo = {}
+        for i in range(count):
+            name = ffi.new("char[128]")
+            tmp = ffi.new("unsigned int*", 0)
+            lib.wrap_nvml_get_gpu_name(nvHandle, i, name)
+            deviceinfo['name'] = ffi.string(name).decode()
+            lib.wrap_nvml_get_tempC(nvHandle, i, tmp)
+            deviceinfo['tempC'] = tmp[0]
+            lib.wrap_nvml_get_fanpcnt(nvHandle, i, tmp)
+            deviceinfo['fanpcnt'] = tmp[0]
+            lib.wrap_nvml_get_power_usage(nvHandle, i, tmp)
+            deviceinfo['power_usage'] = tmp[0]
+            info.append(deviceinfo)
+            deviceinfo.clear()
+    return info
+
+def amdGetGpuInfo():
+    info = []
+    if amdHandle:
+        count = ffi.new("int*", 0)
+        lib.wrap_adl_get_gpucount(amdHandle, count)
+        deviceinfo = {}
+        for i in range(count):
+            name = ffi.new("char[128]")
+            tmp = ffi.new("unsigned int*", 0)
+            lib.wrap_adl_get_gpu_name(amdHandle, i, name)
+            deviceinfo['name'] = ffi.string(name).decode()
+            lib.wrap_adl_get_tempC(amdHandle, i, tmp)
+            deviceinfo['tempC'] = tmp[0]
+            lib.wrap_adl_get_fanpcnt(amdHandle, i, tmp)
+            deviceinfo['fanpcnt'] = tmp[0]
+            lib.wrap_adl_get_power_usage(amdHandle, i, tmp)
+            deviceinfo['power_usage'] = tmp[0]
+            info.append(deviceinfo)
+            deviceinfo.clear()
+    return info
+
+if __name__ == '__main__':
+    print(amdGetGpuInfo())
+    print(nvmlGetGpuInfo())

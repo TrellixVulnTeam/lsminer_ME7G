@@ -45,7 +45,7 @@ class lsminerClient(object):
             logging.error('connectSrv exception. msg: ' + str(e))
             time.sleep(3)
             q.put(1)
-
+    
     def sendLoginReq(self):
         try:
             n = getNvidiaCount()
