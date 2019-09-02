@@ -54,51 +54,120 @@ struct GPUStatusStruc {
 '''
 
 def getMinerStatus_trex(msdict):
-	pass
+	try:
+		minerstatus = {}
+		minerstatus['uptime'] = msdict['uptime']
+		minerstatus['hashrate'] = []
+		for device in msdict['gpus']:
+			minerstatus['hashrate'].append(device['hashrate'])
+			minerstatus['totalhashrate'] += device['hashrate']
+		return minerstatus
+	except Exception as e:
+		print("function getMinerStatus_trex exception. msg: " + str(e))
+		return None
+	return None
 
 def getMinerStatus_nbminer(msdict):
-	pass
+	try:
+		minerstatus = {}
+		minerstatus['uptime'] = 0
+		minerstatus['hashrate'] = []
+		for device in msdict['miner']['devices']:
+			minerstatus['hashrate'].append(device['hashrate_raw'])
+			minerstatus['totalhashrate'] += device['hashrate_raw']
+		return minerstatus
+	except Exception as e:
+		print("function getMinerStatus_nbminer exception. msg: " + str(e))
+		return None
+	return None
 
 def getMinerStatus_gminer(msdict):
-	pass
+	try:
+		minerstatus = {}
+		minerstatus['uptime'] = msdict['uptime']
+		minerstatus['hashrate'] = []
+		for device in msdict['devices']:
+			minerstatus['hashrate'].append(device['speed'])
+			minerstatus['totalhashrate'] += device['speed']
+		return minerstatus
+	except Exception as e:
+		print("function getMinerStatus_gminer exception. msg: " + str(e))
+		return None
+	return None
 
 def getMinerStatus_ewbfminer(msdict):
-	pass
+	try:
+		minerstatus = {}
+		minerstatus['uptime'] = 0
+		minerstatus['hashrate'] = []
+		for device in msdict['result']:
+			minerstatus['hashrate'].append(device['speed_sps'])
+			minerstatus['totalhashrate'] += device['speed_sps']
+		return minerstatus
+	except Exception as e:
+		print("function getMinerStatus_ewbfminer exception. msg: " + str(e))
+		return None
+	return None
 
 def getMinerStatus_bminer(msdict):
-	pass
+	try:
+		minerstatus = {}
+		minerstatus['uptime'] = 0
+		minerstatus['hashrate'] = []
+		for device in msdict['miners'].values():
+			minerstatus['hashrate'].append(device['solver']['solution_rate'])
+			minerstatus['totalhashrate'] += device['solver']['solution_rate']
+		return minerstatus
+	except Exception as e:
+		print("function getMinerStatus_bminer exception. msg: " + str(e))
+		return None
+	return None
 
 def getMinerStatus_kbminer(msdict):
-	pass
+	return None
 
 def getMinerStatus_hspminer(msdict, aid):
-	pass
+	return None
 
 def getMinerStatus_lolminer(msdict):
-	pass
+	return None
 
 def getMinerStatus_wildrigminer(msdict):
-	pass
+	return None
 
 def getMinerStatus_srbminer(msdict):
-	pass
+	return None
 
 def getMinerStatus_xmrigminer(msdict):
-	pass
+	return None
 
-def getMinerResultDict(url):
+#tcp
+
+def getMinerStatus_claymoreminer(msdict):
+	return None
+
+def getMinerStatus_CryptoDredgeMiner(buf):
+	return None
+
+def getMinerStatus_TeamRedMiner(buf):
+	return None
+
+def getMinerStatus_ZEnemyMiner(buf):
+	return None
+
+def getMinerResultDict_url(url):
 	try:
 		req = request.Request(url)
 		with request.urlopen(req) as f:
 			return json.loads(f.read().decode('utf-8'))
 	except Exception as e:
-		print("function getMinerResult exception. msg: " + str(e))
+		print("function getMinerResultDict_url exception. msg: " + str(e))
 		return None
 
 def getMinerStatus_url(cfg):
 	apimode = cfg['apimode']
 	url = cfg['apiurl']
-	msdict = getMinerResultDict(url)
+	msdict = getMinerResultDict_url(url)
 	if msdict:
 		status = None
 		if apimode == 1:
@@ -137,18 +206,39 @@ def getMinerStatus_url(cfg):
 
 	return None
 
-def getMinerResultDict(url):
-	cmd = url.split('|')[0] +'\r\n'
-	port = url.split('|')[1]
-	sock = socket.create_connection(('127.0.0.1', port), 3)
-	sock.setblocking(True)
-	sock.settimeout(None)
-	
-
+def getMinerResult_tcp(url):
+	try:
+		cmd = url.split('|')[0] +'\r\n'
+		port = url.split('|')[1]
+		sock = socket.create_connection(('127.0.0.1', port), 3)
+		sock.setblocking(True)
+		sock.settimeout(None)
+		sock.sendall(cmd.encode())
+		buf = sock.recv(10240).decode()
+		sock.close()
+		return buf
+	except Exception as e:
+		print("function getMinerResultDict_tcp exception. msg: " + str(e))
+		return None
 
 def getMinerStatus_tcp(cfg):
 	apimode = cfg['apimode']
 	url = cfg['apiurl']
+	buf = getMinerResult_tcp(url)
+	if buf:
+		status = None
+		if apimode == 4:
+			status = getMinerStatus_ZEnemyMiner(buf)
+		elif apimode == 5:
+			status = getMinerStatus_CryptoDredgeMiner(buf)
+		elif apimode == 26:
+			status = getMinerStatus_TeamRedMiner(buf)
+		elif apimode == 3 or apimode == 28 or apimode == 30:
+			msdict = json.loads(buf)
+			status = getMinerStatus_claymoreminer(msdict)
+		return status
+	return None
+
 
 def getMinerStatus(cfg):
 	apimode = cfg['apimode']
