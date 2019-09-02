@@ -83,3 +83,13 @@ def getVedioCard():
                 cardstr = name
     return cardstr
     
+def downloadFile(url, path):
+    '''从url下载文件保存到path路径，path包含文件名'''
+    try:
+        req = request.Request(url)
+        with request.urlopen(req) as f:
+            with open(path, "wb") as p:
+                p.write(f.read())
+    except Exception as e:
+        print("function downloadFile exception. msg: " + str(e))
+        return 0
