@@ -1,4 +1,5 @@
-import os 
+import os
+import platform
 from cffi import FFI
 
 ffi = FFI()
@@ -24,12 +25,14 @@ ffi.cdef('''
     int wrap_adl_get_power_usage(wrap_adl_handle* adlh, int gpuindex, unsigned int* milliwatts);
 
 ''')
-              
-#dirs = os.path.split(os.path.realpath(__file__))[0]                   
-lib = ffi.dlopen('./gpumon/libgpumon.so')
 
-nvHandle = lib.wrap_nvml_create()
-amdHandle = lib.wrap_adl_create()
+if platform.system() == 'Linux':
+    lib = ffi.dlopen('./gpumon/libgpumon.so')
+    nvHandle = lib.wrap_nvml_create()
+    amdHandle = lib.wrap_adl_create()
+else:
+    nvHandle = None
+    amdHandle = None
 
 def nvmlGetGpuInfo():
     info = []
