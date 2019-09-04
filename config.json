@@ -7,6 +7,6 @@
     "wkname":"linuxTest",
     "appver":"1000000",
     "driverver":"230",
-    "os":"linux",
+    "os":2,
     "reportime":"30"
 }

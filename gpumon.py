@@ -34,6 +34,28 @@ else:
     nvHandle = None
     amdHandle = None
 
+def nvmlGetGpuCount():
+    gpuCount = 0
+    if nvHandle:
+        count = ffi.new("int*", 0)
+        lib.wrap_nvml_get_gpucount(nvHandle, count)
+        gpuCount = count[0]
+        ffi.release(count)
+    return gpuCount
+
+def nvmlGetGpuName():
+    gpuName = None
+    if nvHandle:
+        count = ffi.new("int*", 0)
+        lib.wrap_nvml_get_gpucount(nvHandle, count)
+        name = ffi.new("char[128]")
+        if count[0]:
+            lib.wrap_nvml_get_gpu_name(nvHandle, 0, name, 128)
+            gpuName = ffi.string(name).decode()
+        ffi.release(count)
+        ffi.release(name)
+    return gpuName
+
 def nvmlGetGpuInfo():
     info = []
     if nvHandle:
@@ -60,6 +82,28 @@ def nvmlGetGpuInfo():
         ffi.release(fanpcnt)
         ffi.release(power_usage)
     return info
+
+def amdGetGpuCount():
+    gpuCount = 0
+    if amdHandle:
+        count = ffi.new("int*", 0)
+        lib.wrap_adl_get_gpucount(amdHandle, count)
+        gpuCount = count[0]
+        ffi.release(count)
+    return gpuCount
+
+def amdGetGpuName():
+    gpuName = None
+    if amdHandle:
+        count = ffi.new("int*", 0)
+        lib.wrap_adl_get_gpucount(amdHandle, count)
+        name = ffi.new("char[128]")
+        if count[0]:
+            lib.wrap_adl_get_gpu_name(amdHandle, 0, name, 128)
+            gpuName = ffi.string(name).decode()
+        ffi.release(count)
+        ffi.release(name)
+    return gpuName
 
 def amdGetGpuInfo():
     info = []

@@ -11,9 +11,11 @@ import threading
 import sys
 import subprocess
 import shlex
+from datetime import timedelta
+from datetime import datetime
 
-import gpumon
-import minerinfo
+from gpumon import *
+from minerinfo import *
 
 logging.basicConfig(level = logging.INFO,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -35,10 +37,31 @@ class lsminerClient(object):
         self.minerargs = None
         self.minerpath = None
         self.subprocess = None
+        self.startime = datetime.now()
+        self.gpuType = 1    #nvidia==1, amd==2
 
     def __del__(self):
         pass
 
+    def getClientUptimeMinutes(self):
+        delta = datetime.now() - self.starttime
+        return delta.seconds // 60
+
+    def getGpuInfo(self):
+        if self.gpuType == 1:
+            return nvmlGetGpuInfo()
+        else:
+            return amdGetGpuInfo()
+    
+    def getMinerInfo(self):
+        return getMinerStatus(self.minerargs)
+
+    def checkGpuType(self):
+        n = nvmlGetGpuCount()
+        a = amdGetGpuCount()
+        self.gpuType = 1 if n > a else 2
+        return self.gpuType
+        
     def connectSrv(self):
         try:
             self.sock = socket.create_connection((self.cfg['ip'], self.cfg['port']), 3)
@@ -51,17 +74,22 @@ class lsminerClient(object):
     
     def sendLoginReq(self):
         try:
-            n = getNvidiaCount()
-            a = getAMDCount()
+            if self.gpuType == 1:
+                cnt = nvmlGetGpuCount()
+                name = nvmlGetGpuName()
+            else:
+                cnt = amdGetGpuCount()
+                name = amdGetGpuName()
+            
             reqData = {}
             reqData['method'] = 1
             reqData['accesskey'] = self.cfg['accesskey']
             reqData['wkname'] = self.cfg['wkname']
             reqData['wkid'] = getWkid()
-            reqData['devicename'] = getVedioCard()
-            reqData['devicecnt'] = a + n
+            reqData['devicename'] = name
+            reqData['devicecnt'] = cnt
             reqData['appver'] = self.cfg['appver']
-            reqData['platform'] = 1 if n > a else 2
+            reqData['platform'] = self.gpuType
             reqData['driverver'] = self.cfg['driverver']
             reqData['os'] = self.cfg['os']
             reqjson = json.dumps(reqData)
@@ -99,16 +127,46 @@ class lsminerClient(object):
             q.put(2)
     
     def getReportData(self):
-        pass
+        reqData['method'] = 3
+        reqData['uptime'] = self.getClientUptimeMinutes()
+        reqData['minerstatus'] = 1
+        gpuinfo = self.getGpuInfo()
+        if gpuinfo:
+            minerinfo = self.getMinerInfo()
+            if minerinfo:
+                reqData['hashrate'] = minerinfo['totalhashrate']
+                for i in range(len(gpuinfo)):
+                    gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + gpuinfo[i]['tempC'] + '|0|' + gpuinfo[i]['fanpcnt'] + '|' + gpuinfo[i]['power_usage']
+                    if i+1 == len(gpuinfo):
+                        gpustatus += '$'
+                    else:
+                        gpustatus += '|'
+            else:
+                reqData['hashrate'] = 0
+                mc = len(minerinfo['hashrate'])
+                for i in range(len(gpuinfo)):
+                    if i < mc:
+                        gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + gpuinfo[i]['tempC'] + '|' + minerinfo['hashrate'][i] + '|' + gpuinfo[i]['fanpcnt'] + '|' + gpuinfo[i]['power_usage']
+                    else:
+                        gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + gpuinfo[i]['tempC'] + '|0|' + gpuinfo[i]['fanpcnt'] + '|' + gpuinfo[i]['power_usage']
+                    
+                    if i+1 == len(gpuinfo):
+                        gpustatus += '$'
+                    else:
+                        gpustatus += '|'
+            gpustatus += str(getClientUptimeMinutes())
+            return gpustatus
+        return None
 
     def reportThread(self):
         pass
-    
+    def downloadWriteFile(url):
+        pass
     def minerThread(self):
         args = []
         args.append(self.minerpath)
-        minerargs = shlex.split(self.minerargs['customize'])
-        args.extend(minerargs)
+        margs = shlex.split(self.margs['customize'])
+        args.extend(margs)
         self.subprocess = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         thread = threading.Thread(target=lsminerClient.reportThread, args=(self,))
         thread.start()
