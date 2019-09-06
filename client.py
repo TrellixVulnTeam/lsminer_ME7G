@@ -35,7 +35,6 @@ class lsminerClient(object):
         self.state = None
         self.cfg = None
         self.sock = None
-        self.minerargs = None
         self.minerpath = None
         self.subprocess = None
         self.mthread = None
@@ -55,9 +54,6 @@ class lsminerClient(object):
             return nvmlGetGpuInfo()
         else:
             return amdGetGpuInfo()
-    
-    def getMinerInfo(self):
-        return getMinerStatus(self.minerargs)
 
     def checkGpuType(self):
         n = nvmlGetGpuCount()
@@ -99,8 +95,7 @@ class lsminerClient(object):
             self.sock.sendall(reqjson.encode("utf-8"))
         except Exception as e:
             logging.error('sendLoginReq exception. msg: ' + str(e))
-            return None
-        
+            return None     
 
     def sendGetMinerArgsReq(self):
         try:
@@ -138,7 +133,7 @@ class lsminerClient(object):
             time.sleep(3)
             q.put(2)
     
-    def getReportData(self):
+    def getReportData(self, mcfg):
         try:
             reqData = {}
             reqData['method'] = 3
@@ -146,7 +141,7 @@ class lsminerClient(object):
             reqData['minerstatus'] = 1
             gpuinfo = self.getGpuInfo()
             if gpuinfo:
-                minerinfo = self.getMinerInfo()
+                minerinfo = getMinerStatus(mcfg)
                 if minerinfo:
                     reqData['hashrate'] = minerinfo['totalhashrate']
                     for i in range(len(gpuinfo)):
@@ -177,19 +172,19 @@ class lsminerClient(object):
             logging.error("function getReportData exception. msg: " + str(e))
             return None
 
-    def reportThread(self):
+    def reportThread(self, mcfg):
         while True:
             try:
-                reqData = self.getReportData()
-                self.sock.sendall(reqData.encode('utf-8'))
                 time.sleep(30)
+                reqData = self.getReportData(mcfg)
+                self.sock.sendall(reqData.encode('utf-8'))
             except Exception as e:
                 logging.error("function reportThread exception. msg: " + str(e))
 
-    def downloadWriteFile(self, url):
+    def downloadWriteFile(self, mcfg):
         while True:
             try:
-                req = request.Request(url)
+                req = request.Request(mcfg['minerurl'])
                 with request.urlopen(req) as f:
                     with open('./miners/temp.tar.xz', 'wb') as c:
                         c.write(f.read())
@@ -197,38 +192,36 @@ class lsminerClient(object):
                         with tarfile.open('./miners/temp.tar.xz') as tar:
                             tar.extractall('./miners')
                             os.remove('./miners/temp.tar.xz')
-                            self.minerpath = './miners/' + self.minerargs['minerver'] + '_linux/' + self.minerargs['minername']
+                            self.minerpath = './miners/' + mcfg['minerver'] + '_linux/' + mcfg['minername']
                             return self.minerpath
             except Exception as e:
                 logging.error("function downloadWriteFile exception. msg: " + str(e))
                 logging.error('downloadWriteFile failed. sleep 3 seconds.')
                 time.sleep(3)
 
-    def checkMinerVer(self):
+    def checkMinerVer(self, mcfg):
         try:
-            mf = './miners/' + self.minerargs['minerver'] + '_linux'
-            os.stat(mf)
-            self.minerpath = mf + self.minerargs['minername']
-            return self.minerpath
+            mf = './miners/' + mcfg['minerver'] + '_linux'
+            if os.path.exists(mf):
+                self.minerpath = mf + mcfg['minername']
+                return self.minerpath
+            else:
+                delcmd = 'rm -rf ./miners/' + mcfg['minerver'].split('_')[0] + '_*'
+                os.system(delcmd)
         except Exception as e:
-            delcmd = 'rm -rf ./miners/' + self.minerargs['minerver'].split('_')[0] + '_*'
-            os.system(delcmd)
             logging.error("function checkMinerVer exception. msg: " + str(e))
             return None
 
-    def minerThread(self):
+    def minerThread(self, mcfg):
         try:
-            if not self.checkMinerVer():
-                self.downloadWriteFile(self.minerargs['minerurl'])
+            if not self.checkMinerVer(mcfg):
+                self.downloadWriteFile(mcfg)
 
             args = []
             args.append(self.minerpath)
-            margs = shlex.split(self.minerargs['customize'])
+            margs = shlex.split(mcfg['customize'])
             args.extend(margs)
             self.subprocess = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            if self.rthread == None:
-                self.rthread = threading.Thread(target=lsminerClient.reportThread, args=(self,))
-                self.rthread.start()
             for line in iter(self.subprocess.stdout.readline(), ''):
                 print(line.decode('gbk'))
             if self.subprocess.returncode < 0:
@@ -243,13 +236,22 @@ class lsminerClient(object):
         try:
             if 'result' in msg and msg['result']:
                 logging.info('get miner args ok.')
-                self.minerargs = msg
-                if self.subprocess and self.subprocess.poll is None:
-                    self.subprocess.terminate()
+                
+                #kill miner process, the miner thread will exit
                 if self.mthread:
-                    self.mthread.join()
-                self.mthread = threading.Thread(target=lsminerClient.minerThread, args=(self,))
+                    while self.mthread.is_alive():
+                        if self.subprocess and self.subprocess.poll == None:
+                            self.subprocess.terminate()
+                        time.sleep(1)
+
+                #start new miner thread
+                self.mthread = threading.Thread(target=lsminerClient.minerThread, args=(self, msg))
                 self.mthread.start()
+                
+                #start new report Thread
+                if self.rthread == None:
+                    self.rthread = threading.Thread(target=lsminerClient.reportThread, args=(self, msg))
+                    self.rthread.start()
             else:
                 logging.info('get miner args error. msg: ' + msg['error'])
                 q.put(3)

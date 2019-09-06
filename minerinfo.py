@@ -255,10 +255,10 @@ def getMinerResultDict_url(url):
 		print("function getMinerResultDict_url exception. msg: " + str(e))
 		return None
 
-def getMinerStatus_url(cfg):
+def getMinerStatus_url(apicfg):
 	try:
-		apimode = cfg['apimode']
-		url = cfg['apiurl']
+		apimode = apicfg['apimode']
+		url = apicfg['apiurl']
 		msdict = getMinerResultDict_url(url)
 		if msdict:
 			status = None
@@ -315,10 +315,10 @@ def getMinerResult_tcp(url):
 		print("function getMinerResultDict_tcp exception. msg: " + str(e))
 		return None
 
-def getMinerStatus_tcp(cfg):
+def getMinerStatus_tcp(apicfg):
 	try:
-		apimode = cfg['apimode']
-		url = cfg['apiurl']
+		apimode = apicfg['apimode']
+		url = apicfg['apiurl']
 		buf = getMinerResult_tcp(url)
 		if buf:
 			status = None
@@ -337,14 +337,14 @@ def getMinerStatus_tcp(cfg):
 		print("function getMinerStatus_tcp exception. msg: " + str(e))
 		return None
 
-def getMinerStatus(cfg):
+def getMinerStatus(apicfg):
 	try:
-		apimode = cfg['apimode']
+		apimode = apicfg['apimode']
 		tcpmode = [3, 4, 5, 26,28, 30]
 		if apimode in tcpmode:
-			return getMinerStatus_tcp(cfg)
+			return getMinerStatus_tcp(apicfg)
 		else:
-			return getMinerStatus_url(cfg)
+			return getMinerStatus_url(apicfg)
 		return None
 	except Exception as e:
 		print("function getMinerStatus exception. msg: " + str(e))
