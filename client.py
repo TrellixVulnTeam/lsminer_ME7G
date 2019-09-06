@@ -110,6 +110,18 @@ class lsminerClient(object):
             logging.error('sendGetMinerArgsReq exception. msg: ' + str(e))
             return None
 
+    def sendLogoutReq(self):
+        try:
+            reqData = {}
+            reqData['method'] = 6
+            reqData['os'] = self.cfg['os']
+            reqjson = json.dumps(reqData)
+            reqjson += '\r\n'
+            self.sock.sendall(reqjson.encode("utf-8"))
+        except Exception as e:
+            logging.error('sendLogoutReq exception. msg: ' + str(e))
+            return None
+
     def loadCfg(self):
         try:
             self.cfg = loadCfg()
@@ -131,8 +143,9 @@ class lsminerClient(object):
             q.put(3)
         else:
             logging.info('login error. msg: ' + msg['error'])
-            time.sleep(3)
-            q.put(2)
+            #time.sleep(3)
+            q.put(6)
+            q.put(1)
     
     def getReportData(self, mcfg):
         try:
@@ -143,8 +156,8 @@ class lsminerClient(object):
             gpuinfo = self.getGpuInfo()
             if gpuinfo:
                 minerinfo = getMinerStatus(mcfg)
-                if minerinfo:
-                    reqData['hashrate'] = minerinfo['totalhashrate']
+                if not minerinfo:
+                    reqData['hashrate'] = 0
                     for i in range(len(gpuinfo)):
                         gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + str(gpuinfo[i]['tempC']) + '|0|' + str(gpuinfo[i]['fanpcnt']) + '|' + str(gpuinfo[i]['power_usage'])
                         if i+1 == len(gpuinfo):
@@ -152,7 +165,7 @@ class lsminerClient(object):
                         else:
                             gpustatus += '|'
                 else:
-                    reqData['hashrate'] = 0
+                    reqData['hashrate'] = minerinfo['totalhashrate']
                     mc = len(minerinfo['hashrate'])
                     for i in range(len(gpuinfo)):
                         if i < mc:
@@ -205,7 +218,7 @@ class lsminerClient(object):
         try:
             mf = './miners/' + mcfg['minerver'] + '_linux'
             if os.path.exists(mf):
-                self.minerpath = mf + mcfg['minername']
+                self.minerpath = mf + '/' + mcfg['minername']
                 return self.minerpath
             else:
                 delcmd = 'rm -rf ./miners/' + mcfg['minerver'].split('_')[0] + '_*'
@@ -245,7 +258,7 @@ class lsminerClient(object):
                 #kill miner process, the miner thread will exit
                 if self.mthread:
                     while self.mthread.is_alive():
-                        if self.subprocess and self.subprocess.poll == None:
+                        if self.subprocess and self.subprocess.poll() == None:
                             self.subprocess.terminate()
                         time.sleep(1)
 
@@ -254,9 +267,10 @@ class lsminerClient(object):
                 self.mthread.start()
                 
                 #start new report Thread
+                '''
                 if self.rthread == None:
                     self.rthread = threading.Thread(target=lsminerClient.reportThread, args=(self,))
-                    self.rthread.start()
+                    self.rthread.start()'''
             else:
                 logging.info('get miner args error. msg: ' + msg['error'])
                 q.put(3)
@@ -332,6 +346,8 @@ class lsminerClient(object):
             self.sendLoginReq()
         elif cmd == 3:
             self.sendGetMinerArgsReq()
+        elif cmd == 6:
+            self.sendLogoutReq()
         else:
             logging.error('unknown cmd. cmd: ' + str(cmd))
 
