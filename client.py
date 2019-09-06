@@ -143,8 +143,8 @@ class lsminerClient(object):
             q.put(3)
         else:
             logging.info('login error. msg: ' + msg['error'])
-            #time.sleep(3)
             q.put(6)
+            time.sleep(1)
             q.put(1)
     
     def getReportData(self, mcfg):
@@ -238,7 +238,7 @@ class lsminerClient(object):
             margs = shlex.split(mcfg['customize'])
             args.extend(margs)
             self.subprocess = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            for line in iter(self.subprocess.stdout.readline(), ''):
+            for line in iter(self.subprocess.stdout.readline, ''):
                 print(line.decode('gbk'))
             if self.subprocess.returncode < 0:
                 logging.info('miner terminated.')
@@ -247,6 +247,18 @@ class lsminerClient(object):
         except Exception as e:
             logging.error("function minerThread exception. msg: " + str(e))
 
+    def killAllMiners(self, path):
+        try:
+            cmd = 'ps -x | grep ' + path
+            o = os.popen(cmd).read()
+            lines = o.splitlines(False)
+            for l in lines:
+                p = l.split(' ')
+                if 'grep' in p:
+                    continue
+                os.kill(p[1])
+        except Exception as e:
+            logging.error("function killAllMiners exception. msg: " + str(e))
 
     def onGetMinerArgs(self, msg):
         try:
@@ -259,7 +271,8 @@ class lsminerClient(object):
                 if self.mthread:
                     while self.mthread.is_alive():
                         if self.subprocess and self.subprocess.poll() == None:
-                            self.subprocess.terminate()
+                            #self.subprocess.terminate()
+                            self.killAllMiners(self.minerpath[1:])
                         time.sleep(1)
 
                 #start new miner thread
@@ -267,10 +280,10 @@ class lsminerClient(object):
                 self.mthread.start()
                 
                 #start new report Thread
-                '''
+                
                 if self.rthread == None:
                     self.rthread = threading.Thread(target=lsminerClient.reportThread, args=(self,))
-                    self.rthread.start()'''
+                    self.rthread.start()
             else:
                 logging.info('get miner args error. msg: ' + msg['error'])
                 q.put(3)
