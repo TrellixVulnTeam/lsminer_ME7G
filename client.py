@@ -35,6 +35,7 @@ class lsminerClient(object):
         self.state = None
         self.cfg = None
         self.sock = None
+        self.minerargs = None
         self.minerpath = None
         self.subprocess = None
         self.mthread = None
@@ -172,10 +173,11 @@ class lsminerClient(object):
             logging.error("function getReportData exception. msg: " + str(e))
             return None
 
-    def reportThread(self, mcfg):
+    def reportThread(self):
         while True:
             try:
                 time.sleep(30)
+                mcfg = self.minerargs
                 reqData = self.getReportData(mcfg)
                 self.sock.sendall(reqData.encode('utf-8'))
             except Exception as e:
@@ -212,8 +214,9 @@ class lsminerClient(object):
             logging.error("function checkMinerVer exception. msg: " + str(e))
             return None
 
-    def minerThread(self, mcfg):
+    def minerThread(self):
         try:
+            mcfg = self.minerargs
             if not self.checkMinerVer(mcfg):
                 self.downloadWriteFile(mcfg)
 
@@ -236,6 +239,8 @@ class lsminerClient(object):
         try:
             if 'result' in msg and msg['result']:
                 logging.info('get miner args ok.')
+
+                self.minerargs = msg
                 
                 #kill miner process, the miner thread will exit
                 if self.mthread:
@@ -245,12 +250,12 @@ class lsminerClient(object):
                         time.sleep(1)
 
                 #start new miner thread
-                self.mthread = threading.Thread(target=lsminerClient.minerThread, args=(self, msg))
+                self.mthread = threading.Thread(target=lsminerClient.minerThread, args=(self,))
                 self.mthread.start()
                 
                 #start new report Thread
                 if self.rthread == None:
-                    self.rthread = threading.Thread(target=lsminerClient.reportThread, args=(self, msg))
+                    self.rthread = threading.Thread(target=lsminerClient.reportThread, args=(self,))
                     self.rthread.start()
             else:
                 logging.info('get miner args error. msg: ' + msg['error'])
