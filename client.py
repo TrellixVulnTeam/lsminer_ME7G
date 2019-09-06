@@ -135,6 +135,7 @@ class lsminerClient(object):
             q.put(3)
         else:
             logging.info('login error. msg: ' + msg['error'])
+            time.sleep(3)
             q.put(2)
     
     def getReportData(self):
@@ -149,7 +150,7 @@ class lsminerClient(object):
                 if minerinfo:
                     reqData['hashrate'] = minerinfo['totalhashrate']
                     for i in range(len(gpuinfo)):
-                        gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + gpuinfo[i]['tempC'] + '|0|' + gpuinfo[i]['fanpcnt'] + '|' + gpuinfo[i]['power_usage']
+                        gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + str(gpuinfo[i]['tempC']) + '|0|' + str(gpuinfo[i]['fanpcnt']) + '|' + str(gpuinfo[i]['power_usage'])
                         if i+1 == len(gpuinfo):
                             gpustatus += '$'
                         else:
@@ -159,9 +160,9 @@ class lsminerClient(object):
                     mc = len(minerinfo['hashrate'])
                     for i in range(len(gpuinfo)):
                         if i < mc:
-                            gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + gpuinfo[i]['tempC'] + '|' + minerinfo['hashrate'][i] + '|' + gpuinfo[i]['fanpcnt'] + '|' + gpuinfo[i]['power_usage']
+                            gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + str(gpuinfo[i]['tempC']) + '|' + str(minerinfo['hashrate'][i]) + '|' + str(gpuinfo[i]['fanpcnt']) + '|' + str(gpuinfo[i]['power_usage'])
                         else:
-                            gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + gpuinfo[i]['tempC'] + '|0|' + gpuinfo[i]['fanpcnt'] + '|' + gpuinfo[i]['power_usage']
+                            gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + str(gpuinfo[i]['tempC']) + '|0|' + str(gpuinfo[i]['fanpcnt']) + '|' + str(gpuinfo[i]['power_usage'])
                         
                         if i+1 == len(gpuinfo):
                             gpustatus += '$'
@@ -195,6 +196,7 @@ class lsminerClient(object):
                         c.flush()
                         with tarfile.open('./miners/temp.tar.xz') as tar:
                             tar.extractall('./miners')
+                            os.remove('./miners/temp.tar.xz')
                             self.minerpath = './miners/' + self.minerargs['minerver'] + '_linux/' + self.minerargs['minername']
                             return self.minerpath
             except Exception as e:
@@ -202,10 +204,24 @@ class lsminerClient(object):
                 logging.error('downloadWriteFile failed. sleep 3 seconds.')
                 time.sleep(3)
 
+    def checkMinerVer(self):
+        try:
+            mf = './miners/' + self.minerargs['minerver'] + '_linux'
+            os.stat(mf)
+            self.minerpath = mf + self.minerargs['minername']
+            return self.minerpath
+        except Exception as e:
+            delcmd = 'rm -rf ./miners/' + self.minerargs['minerver'].split('_')[0] + '_*'
+            os.system(delcmd)
+            logging.error("function checkMinerVer exception. msg: " + str(e))
+            return None
+
     def minerThread(self):
         try:
+            if not self.checkMinerVer():
+                self.downloadWriteFile(self.minerargs['minerurl'])
+
             args = []
-            self.downloadWriteFile(self.minerargs['minerurl'])
             args.append(self.minerpath)
             margs = shlex.split(self.minerargs['customize'])
             args.extend(margs)
