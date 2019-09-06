@@ -41,13 +41,13 @@ class lsminerClient(object):
         self.mthread = None
         self.rthread = None
         self.startime = datetime.now()
-        self.gpuType = 1    #nvidia==1, amd==2
+        self.gpuType = self.checkGpuType()    #nvidia==1, amd==2
 
     def __del__(self):
         pass
 
     def getClientUptimeMinutes(self):
-        delta = datetime.now() - self.starttime
+        delta = datetime.now() - self.startime
         return delta.seconds // 60
 
     def getGpuInfo(self):
@@ -62,8 +62,7 @@ class lsminerClient(object):
     def checkGpuType(self):
         n = nvmlGetGpuCount()
         a = amdGetGpuCount()
-        self.gpuType = 1 if n > a else 2
-        return self.gpuType
+        return  1 if n > a else 2
         
     def connectSrv(self):
         try:
@@ -100,22 +99,31 @@ class lsminerClient(object):
             self.sock.sendall(reqjson.encode("utf-8"))
         except Exception as e:
             logging.error('sendLoginReq exception. msg: ' + str(e))
+            return None
         
 
     def sendGetMinerArgsReq(self):
-        reqData = {}
-        reqData['method'] = 2
-        reqData['os'] = self.cfg['os']
-        reqjson = json.dumps(reqData)
-        reqjson += '\r\n'
-        self.sock.sendall(reqjson.encode("utf-8"))
+        try:
+            reqData = {}
+            reqData['method'] = 2
+            reqData['os'] = self.cfg['os']
+            reqjson = json.dumps(reqData)
+            reqjson += '\r\n'
+            self.sock.sendall(reqjson.encode("utf-8"))
+        except Exception as e:
+            logging.error('sendGetMinerArgsReq exception. msg: ' + str(e))
+            return None
 
     def loadCfg(self):
-        self.cfg = loadCfg()
-        if self.cfg == 0:
-            raise ValueError('loadcfg error!')
-        if 'ip' not in self.cfg or 'port' not in self.cfg:
-            raise ValueError('config file error. missing ip or port!')
+        try:
+            self.cfg = loadCfg()
+            if self.cfg == 0:
+                raise ValueError('loadcfg error!')
+            if 'ip' not in self.cfg or 'port' not in self.cfg:
+                raise ValueError('config file error. missing ip or port!')
+        except Exception as e:
+            logging.error('sendGetMinerArgsReq exception. msg: ' + str(e))
+            return None
 
     def onWelcome(self, msg):
         logging.info('connect server ok. recv server msg: ' + msg['message'])
@@ -130,38 +138,43 @@ class lsminerClient(object):
             q.put(2)
     
     def getReportData(self):
-        reqData['method'] = 3
-        reqData['uptime'] = self.getClientUptimeMinutes()
-        reqData['minerstatus'] = 1
-        gpuinfo = self.getGpuInfo()
-        if gpuinfo:
-            minerinfo = self.getMinerInfo()
-            if minerinfo:
-                reqData['hashrate'] = minerinfo['totalhashrate']
-                for i in range(len(gpuinfo)):
-                    gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + gpuinfo[i]['tempC'] + '|0|' + gpuinfo[i]['fanpcnt'] + '|' + gpuinfo[i]['power_usage']
-                    if i+1 == len(gpuinfo):
-                        gpustatus += '$'
-                    else:
-                        gpustatus += '|'
-            else:
-                reqData['hashrate'] = 0
-                mc = len(minerinfo['hashrate'])
-                for i in range(len(gpuinfo)):
-                    if i < mc:
-                        gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + gpuinfo[i]['tempC'] + '|' + minerinfo['hashrate'][i] + '|' + gpuinfo[i]['fanpcnt'] + '|' + gpuinfo[i]['power_usage']
-                    else:
+        try:
+            reqData = {}
+            reqData['method'] = 3
+            reqData['uptime'] = self.getClientUptimeMinutes()
+            reqData['minerstatus'] = 1
+            gpuinfo = self.getGpuInfo()
+            if gpuinfo:
+                minerinfo = self.getMinerInfo()
+                if minerinfo:
+                    reqData['hashrate'] = minerinfo['totalhashrate']
+                    for i in range(len(gpuinfo)):
                         gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + gpuinfo[i]['tempC'] + '|0|' + gpuinfo[i]['fanpcnt'] + '|' + gpuinfo[i]['power_usage']
-                    
-                    if i+1 == len(gpuinfo):
-                        gpustatus += '$'
-                    else:
-                        gpustatus += '|'
-            gpustatus += str(getClientUptimeMinutes())
-            reqData['gpustatus'] = gpustatus
-            reqData = json.dumps(reqData) + '\r\n'
-            return reqData
-        return None
+                        if i+1 == len(gpuinfo):
+                            gpustatus += '$'
+                        else:
+                            gpustatus += '|'
+                else:
+                    reqData['hashrate'] = 0
+                    mc = len(minerinfo['hashrate'])
+                    for i in range(len(gpuinfo)):
+                        if i < mc:
+                            gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + gpuinfo[i]['tempC'] + '|' + minerinfo['hashrate'][i] + '|' + gpuinfo[i]['fanpcnt'] + '|' + gpuinfo[i]['power_usage']
+                        else:
+                            gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + gpuinfo[i]['tempC'] + '|0|' + gpuinfo[i]['fanpcnt'] + '|' + gpuinfo[i]['power_usage']
+                        
+                        if i+1 == len(gpuinfo):
+                            gpustatus += '$'
+                        else:
+                            gpustatus += '|'
+                gpustatus += str(self.getClientUptimeMinutes())
+                reqData['gpustatus'] = gpustatus
+                reqData = json.dumps(reqData) + '\r\n'
+                return reqData
+            return None
+        except Exception as e:
+            logging.error("function getReportData exception. msg: " + str(e))
+            return None
 
     def reportThread(self):
         while True:
@@ -170,36 +183,31 @@ class lsminerClient(object):
                 self.sock.sendall(reqData.encode('utf-8'))
                 time.sleep(30)
             except Exception as e:
-                print("function reportThread exception. msg: " + str(e))
+                logging.error("function reportThread exception. msg: " + str(e))
 
     def downloadWriteFile(self, url):
-        try:
-            req = request.Request(url)
-            with request.urlopen(req) as f:
-                with open('./miners/temp.tar.xz', 'wb') as c:
-                    c.write(f.read)
-                    c.flush()
-                    with tarfile.open('./miners/temp.tar.') as tar:
-                        tar.extractall('./miners/' + self.minerargs.minerver)
-                        self.minerpath = './miners/' + self.minerargs.minerver + '/' + self.minerargs.minername
-                        return self.minerpath
-        except Exception as e:
-            print("function downloadWriteFile exception. msg: " + str(e))
-            return 0
+        while True:
+            try:
+                req = request.Request(url)
+                with request.urlopen(req) as f:
+                    with open('./miners/temp.tar.xz', 'wb') as c:
+                        c.write(f.read())
+                        c.flush()
+                        with tarfile.open('./miners/temp.tar.xz') as tar:
+                            tar.extractall('./miners')
+                            self.minerpath = './miners/' + self.minerargs['minerver'] + '_linux/' + self.minerargs['minername']
+                            return self.minerpath
+            except Exception as e:
+                logging.error("function downloadWriteFile exception. msg: " + str(e))
+                logging.error('downloadWriteFile failed. sleep 3 seconds.')
+                time.sleep(3)
 
     def minerThread(self):
         try:
-            while True:
-                mpath = downloadWriteFile(self.minerargs.minerurl)
-                if mpath:
-                    break
-                else:
-                    time.sleep(3)
-                    logging.error('downloadWriteFile failed. sleep 3 seconds.')
-
             args = []
+            self.downloadWriteFile(self.minerargs['minerurl'])
             args.append(self.minerpath)
-            margs = shlex.split(self.margs['customize'])
+            margs = shlex.split(self.minerargs['customize'])
             args.extend(margs)
             self.subprocess = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if self.rthread == None:
@@ -212,22 +220,25 @@ class lsminerClient(object):
             else:
                 q.put(3)
         except Exception as e:
-            print("function minerThread exception. msg: " + str(e))
+            logging.error("function minerThread exception. msg: " + str(e))
 
 
     def onGetMinerArgs(self, msg):
-        if 'result' in msg and msg['result']:
-            logging.info('get miner args ok.')
-            self.minerargs = msg
-            if self.subprocess and self.subprocess.poll is None:
-                self.subprocess.terminate()
-            if self.mthread:
-                self.mthread.join()
-            self.mthread = threading.Thread(target=lsminerClient.minerThread, args=(self,))
-            self.mthread.start()
-        else:
-            logging.info('get miner args error. msg: ' + msg['error'])
-            q.put(3)
+        try:
+            if 'result' in msg and msg['result']:
+                logging.info('get miner args ok.')
+                self.minerargs = msg
+                if self.subprocess and self.subprocess.poll is None:
+                    self.subprocess.terminate()
+                if self.mthread:
+                    self.mthread.join()
+                self.mthread = threading.Thread(target=lsminerClient.minerThread, args=(self,))
+                self.mthread.start()
+            else:
+                logging.info('get miner args error. msg: ' + msg['error'])
+                q.put(3)
+        except Exception as e:
+            logging.error("function onGetMinerArgs exception. msg: " + str(e))
 
     def onReportResp(self, msg):
         pass
@@ -273,29 +284,22 @@ class lsminerClient(object):
 
 
     def recvThread(self):
-        buffer = []
-        while True:
-            if self.sock == None:
-                logging.info('client socket == None. sleep one second.')
-                time.sleep(1)
-                continue
+        try:
+            buffer = ''
+            while True:
+                if self.sock == None:
+                    logging.info('client socket == None. sleep 1 second.')
+                    time.sleep(1)
+                    continue
 
-            rd = self.sock.recv(4096).decode()
-            if rd:
-                buffer.append(rd)
-                rd = None
-                data = ''.join(buffer)
-                try:
-                    msg = json.loads(data)
+                buffer += self.sock.recv(4096).decode()
+                if '\n' in buffer:
+                    msg = json.loads(buffer)
                     self.processMsg(msg)
-                    buffer.clear()
-                except Exception as e:
-                    logging.info('recv thread exception. msg: ' + str(e))
-                    logging.info('json.loads server data exception.')
-            else:
-                logging.info('server close socket. exit recv thread.')
-                self.sock.close()
-                break
+                    buffer = ''
+        except Exception as e:
+            logging.info('recvThread exception. msg: ' + str(e))
+            time.sleep(1)
 
     '''cmd list: 1 == connect server, 2 == login server, 3 == get miner config'''
     def processCmd(self, cmd):
