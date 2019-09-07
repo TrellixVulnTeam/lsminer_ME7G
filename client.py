@@ -43,12 +43,17 @@ class lsminerClient(object):
         self.rthread = None
         self.startime = datetime.now()
         self.gpuType = self.checkGpuType()    #nvidia==1, amd==2
+        self.minertime = datetime.now()
 
     def __del__(self):
         pass
 
     def getClientUptimeMinutes(self):
         delta = datetime.now() - self.startime
+        return delta.seconds // 60
+
+    def getMinerUptimeMinutes(self):
+        delta = datetime.now() - self.minertime
         return delta.seconds // 60
 
     def getGpuInfo(self):
@@ -152,7 +157,7 @@ class lsminerClient(object):
         try:
             reqData = {}
             reqData['method'] = 3
-            reqData['uptime'] = self.getClientUptimeMinutes()
+            reqData['uptime'] = self.getMinerUptimeMinutes()
             reqData['minerstatus'] = 1
             gpuinfo = self.getGpuInfo()
             if gpuinfo:
@@ -254,6 +259,8 @@ class lsminerClient(object):
             process = subprocess.Popen(cmd, shell=True)
             time.sleep(3)
             process.terminate()
+            #update miner time
+            self.minertime = datetime.now()
         except Exception as e:
             logging.error("function minerThread exception. msg: " + str(e))
 
