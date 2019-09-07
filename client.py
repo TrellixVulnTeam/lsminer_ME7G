@@ -14,6 +14,7 @@ import shlex
 from datetime import timedelta
 from datetime import datetime
 import tarfile
+import signal
 
 from gpumon import *
 from minerinfo import *
@@ -192,6 +193,8 @@ class lsminerClient(object):
                 time.sleep(30)
                 mcfg = self.minerargs
                 reqData = self.getReportData(mcfg)
+                logging.info(' send miner report....')
+                logging.info(reqData)
                 self.sock.sendall(reqData.encode('utf-8'))
             except Exception as e:
                 logging.error("function reportThread exception. msg: " + str(e))
@@ -236,9 +239,11 @@ class lsminerClient(object):
                 p = l.split(' ')
                 if 'grep' in p:
                     continue
-                os.kill(p[1])
+                logging.info('kill task pid: ' + p[0])
+                os.kill(int(p[0]), signal.SIGKILL)
         except Exception as e:
             logging.error("function killAllMiners exception. msg: " + str(e))
+            logging.exception(e)
 
     def minerThreadProc(self):
         try:
@@ -246,7 +251,9 @@ class lsminerClient(object):
             if not self.checkMinerVer(mcfg):
                 self.downloadWriteFile(mcfg)
             cmd = self.minerpath + ' ' + mcfg['customize']
-            os.system(cmd)
+            process = subprocess.Popen(cmd, shell=True)
+            time.sleep(3)
+            process.terminate()
         except Exception as e:
             logging.error("function minerThread exception. msg: " + str(e))
 
@@ -254,11 +261,13 @@ class lsminerClient(object):
         try:
             if 'result' in msg and msg['result']:
                 logging.info('get miner args ok.')
+                logging.info(msg)
 
                 self.minerargs = msg
                 
                 #kill miner process, the miner thread will exit
-                self.killAllMiners(self.minerpath[1:])
+                if self.minerpath:
+                    self.killAllMiners(self.minerpath[1:])
 
                 #start new miner thread
                 self.mthread = threading.Thread(target=lsminerClient.minerThreadProc, args=(self,))
