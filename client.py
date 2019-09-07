@@ -227,6 +227,53 @@ class lsminerClient(object):
             logging.error("function checkMinerVer exception. msg: " + str(e))
             return None
 
+    def killAllMiners(self, path):
+        try:
+            cmd = 'ps -x | grep ' + path
+            o = os.popen(cmd).read()
+            lines = o.splitlines(False)
+            for l in lines:
+                p = l.split(' ')
+                if 'grep' in p:
+                    continue
+                os.kill(p[1])
+        except Exception as e:
+            logging.error("function killAllMiners exception. msg: " + str(e))
+
+    def minerThreadProc(self):
+        try:
+            mcfg = self.minerargs
+            if not self.checkMinerVer(mcfg):
+                self.downloadWriteFile(mcfg)
+            cmd = self.minerpath + ' ' + mcfg['customize']
+            os.system(cmd)
+        except Exception as e:
+            logging.error("function minerThread exception. msg: " + str(e))
+
+    def onGetMinerArgs(self, msg):
+        try:
+            if 'result' in msg and msg['result']:
+                logging.info('get miner args ok.')
+
+                self.minerargs = msg
+                
+                #kill miner process, the miner thread will exit
+                self.killAllMiners(self.minerpath[1:])
+
+                #start new miner thread
+                self.mthread = threading.Thread(target=lsminerClient.minerThreadProc, args=(self,))
+                self.mthread.start()
+                
+                #start new report Thread
+                if self.rthread == None:
+                    self.rthread = threading.Thread(target=lsminerClient.reportThread, args=(self,))
+                    self.rthread.start()
+            else:
+                logging.info('get miner args error. msg: ' + msg['error'])
+                q.put(3)
+        except Exception as e:
+            logging.error("function onGetMinerArgs exception. msg: " + str(e))
+
     def minerThread(self):
         try:
             mcfg = self.minerargs
@@ -247,20 +294,7 @@ class lsminerClient(object):
         except Exception as e:
             logging.error("function minerThread exception. msg: " + str(e))
 
-    def killAllMiners(self, path):
-        try:
-            cmd = 'ps -x | grep ' + path
-            o = os.popen(cmd).read()
-            lines = o.splitlines(False)
-            for l in lines:
-                p = l.split(' ')
-                if 'grep' in p:
-                    continue
-                os.kill(p[1])
-        except Exception as e:
-            logging.error("function killAllMiners exception. msg: " + str(e))
-
-    def onGetMinerArgs(self, msg):
+    def onGetMinerArgsbak(self, msg):
         try:
             if 'result' in msg and msg['result']:
                 logging.info('get miner args ok.')
