@@ -4,6 +4,10 @@
 
 #pragma once
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 //#include <libdevcore/Log.h>
 #include <iostream>
 
@@ -20,4 +24,8 @@ int wrap_dlclose(void* h);
 void* wrap_dlopen(const char* filename);
 void* wrap_dlsym(void* h, const char* sym);
 int wrap_dlclose(void* h);
+#endif
+
+#if defined(__cplusplus)
+}
 #endif

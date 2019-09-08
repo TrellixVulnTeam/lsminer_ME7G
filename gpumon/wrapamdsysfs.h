@@ -7,6 +7,10 @@
 
 #pragma once
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 typedef struct
 {
     int sysfs_gpucount;
@@ -39,3 +43,7 @@ int wrap_amdsysfs_get_fanpcnt(wrap_amdsysfs_handle* sysfsh, int index, unsigned 
 int wrap_amdsysfs_get_power_usage(wrap_amdsysfs_handle* sysfsh, int index, unsigned int* milliwatts);
 
 int wrap_amdsysfs_get_pciInfo(wrap_amdsysfs_handle* sysfsh, int index, pciInfo* info);
+
+#if defined(__cplusplus)
+}
+#endif
