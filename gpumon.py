@@ -47,9 +47,11 @@ if platform.system() == 'Linux':
     lib = ffi.dlopen('./gpumon/libgpumon.so')
     nvHandle = lib.wrap_nvml_create()
     amdHandle = lib.wrap_adl_create()
+    fsHandle = lib.wrap_amdsysfs_create()
 else:
     nvHandle = None
     amdHandle = None
+    fsHandle = None
 
 def nvmlGetGpuCount():
     gpuCount = 0
@@ -149,7 +151,51 @@ def amdGetGpuInfo():
         ffi.release(power_usage)
     return info
 
+def fsGetGpuCount():
+    gpuCount = 0
+    if fsHandle:
+        count = ffi.new("int*", 0)
+        lib.wrap_amdsysfs_get_gpucount(fsHandle, count)
+        gpuCount = count[0]
+        ffi.release(count)
+    return gpuCount
+
+def fsGetGpuName():
+    pass
+
+def fsGetGpuInfo():
+    info = []
+    if fsHandle:
+        count = ffi.new("int*", 0)
+        lib.wrap_amdsysfs_get_gpucount(fsHandle, count)
+        name = ffi.new("char[128]")
+        tempC = ffi.new("unsigned int*", 0)
+        fanpcnt = ffi.new("unsigned int*", 0)
+        power_usage = ffi.new("unsigned int*", 0)
+        pci = ffi.new("pciInfo*", 0)
+        for i in range(count[0]):
+            deviceinfo = {}
+            #lib.wrap_nvml_get_gpu_name(fsHandle, i, name, 128)
+            #deviceinfo['name'] = ffi.string(name).decode()
+            lib.wrap_amdsysfs_get_pciInfo(fsHandle, i, pci)
+            deviceinfo['pci'] = str(pci.DeviceId[0]) + ':'+ str(pci.HwMonId[0])+ ':'+ str(pci.PciDomain[0])+ ':'+ str(pci.PciBus[0])+ ':'+ str(pci.PciDevice[0])
+            lib.wrap_amdsysfs_get_tempC(fsHandle, i, tempC)
+            deviceinfo['tempC'] = tempC[0]
+            lib.wrap_amdsysfs_get_fanpcnt(fsHandle, i, fanpcnt)
+            deviceinfo['fanpcnt'] = fanpcnt[0]
+            lib.wrap_amdsysfs_get_power_usage(fsHandle, i, power_usage)
+            deviceinfo['power_usage'] = power_usage[0]
+            info.append(deviceinfo)
+        ffi.release(count)
+        ffi.release(name)
+        ffi.release(tempC)
+        ffi.release(fanpcnt)
+        ffi.release(power_usage)
+    return info
+
+
 if __name__ == '__main__':
-    print(amdGetGpuInfo())
-    print(nvmlGetGpuInfo())
+    #print(amdGetGpuInfo())
+    #print(nvmlGetGpuInfo())
+    print(fsGetGpuInfo())
     pass
