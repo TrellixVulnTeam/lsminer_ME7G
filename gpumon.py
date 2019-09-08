@@ -152,8 +152,28 @@ def fsGetGpuCount():
         ffi.release(count)
     return gpuCount
 
+def fsGetGpuNameByPci(pcinum):
+    lines = os.popen('lspci | grep VGA').read().splitlines(False)
+    for l in lines:
+        pci = l.split('VGA compatible controller:')[0].strip()
+        name = l.split('VGA compatible controller:')[1].strip()
+        if pci == pcinum:
+            return name
+    return ''
+
 def fsGetGpuName():
-    pass
+    gpuName = ''
+    if fsHandle:
+        count = ffi.new("int*", 0)
+        pci = ffi.new("char[128]")
+        lib.wrap_amdsysfs_get_gpucount(fsHandle, count)
+        if count[0]:
+            lib.wrap_amdsysfs_get_gpu_pci(fsHandle, 0, pci, 128)
+            pcinum = ffi.string(pci).decode().strip()
+            gpuName = fsGetGpuNameByPci(pcinum)
+        ffi.release(count)
+        ffi.release(pci)
+    return gpuName
 
 def fsGetGpuInfo():
     info = []
@@ -166,8 +186,9 @@ def fsGetGpuInfo():
         power_usage = ffi.new("unsigned int*", 0)
         for i in range(count[0]):
             deviceinfo = {}
-            lib.wrap_nvml_get_gpu_pci(fsHandle, i, pci, 128)
-            deviceinfo['pci'] = ffi.string(pci).decode()
+            lib.wrap_amdsysfs_get_gpu_pci(fsHandle, i, pci, 128)
+            deviceinfo['pci'] = ffi.string(pci).decode().strip()
+            deviceinfo['name'] = fsGetGpuNameByPci(deviceinfo['pci'])
             lib.wrap_amdsysfs_get_tempC(fsHandle, i, tempC)
             deviceinfo['tempC'] = tempC[0]
             lib.wrap_amdsysfs_get_fanpcnt(fsHandle, i, fanpcnt)
