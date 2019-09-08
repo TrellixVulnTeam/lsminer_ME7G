@@ -144,6 +144,7 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
         pInfo.PciDomain = PciDomain;
         pInfo.PciBus = PciBus;
         pInfo.PciDevice = PciDevice;
+        pInfo.PciFunction = PciFunction;
         devices.push_back(pInfo);
     }
 
@@ -169,6 +170,7 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
     sysfsh->sysfs_pci_domain_id = (unsigned int*)calloc(gpucount, sizeof(unsigned int));
     sysfsh->sysfs_pci_bus_id = (unsigned int*)calloc(gpucount, sizeof(unsigned int));
     sysfsh->sysfs_pci_device_id = (unsigned int*)calloc(gpucount, sizeof(unsigned int));
+    sysfsh->sysfs_pci_function_id = (unsigned int*)calloc(gpucount, sizeof(unsigned int));
 
     gpucount = 0;
     for (auto const& device : devices)
@@ -178,6 +180,8 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
         sysfsh->sysfs_pci_domain_id[gpucount] = device.PciDomain;
         sysfsh->sysfs_pci_bus_id[gpucount] = device.PciBus;
         sysfsh->sysfs_pci_device_id[gpucount] = device.PciDevice;
+        sysfsh->sysfs_pci_function_id[gpucount] = device.PciFunction;
+
         gpucount++;
     }
 
@@ -298,6 +302,16 @@ int wrap_amdsysfs_get_pciInfo(wrap_amdsysfs_handle* sysfsh, int index, pciInfo* 
     info->PciDomain = sysfsh->sysfs_pci_domain_id[index];
     info->PciBus = sysfsh->sysfs_pci_bus_id[index];
     info->PciDevice = sysfsh->sysfs_pci_device_id[index];
+
+    return 0;
+}
+
+int wrap_amdsysfs_get_gpu_pci(wrap_amdsysfs_handle* sysfsh, int index, char* pcibuf, int bufsize)
+{
+    if (index < 0 || index >= sysfsh->sysfs_gpucount || bufsize < 8)
+        return -1;
+
+    snprintf(pcibuf, bufsize, "%02x:%02x.%01x", sysfsh->sysfs_pci_bus_id[index], sysfsh->sysfs_pci_device_id[index], sysfsh->sysfs_pci_function_id[index]);
 
     return 0;
 }

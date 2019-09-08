@@ -25,21 +25,13 @@ ffi.cdef('''
     int wrap_adl_get_power_usage(wrap_adl_handle* adlh, int gpuindex, unsigned int* milliwatts);
 
     typedef void wrap_amdsysfs_handle;
-    typedef struct _pciInfo
-    {
-        int DeviceId;
-        int HwMonId;
-        int PciDomain;
-        int PciBus;
-        int PciDevice;
-    } pciInfo;
     wrap_amdsysfs_handle* wrap_amdsysfs_create();
     int wrap_amdsysfs_destroy(wrap_amdsysfs_handle* sysfsh);
     int wrap_amdsysfs_get_gpucount(wrap_amdsysfs_handle* sysfsh, int* gpucount);
     int wrap_amdsysfs_get_tempC(wrap_amdsysfs_handle* sysfsh, int index, unsigned int* tempC);
     int wrap_amdsysfs_get_fanpcnt(wrap_amdsysfs_handle* sysfsh, int index, unsigned int* fanpcnt);
     int wrap_amdsysfs_get_power_usage(wrap_amdsysfs_handle* sysfsh, int index, unsigned int* milliwatts);
-    int wrap_amdsysfs_get_pciInfo(wrap_amdsysfs_handle* sysfsh, int index, pciInfo* info);
+    int wrap_amdsysfs_get_gpu_pci(wrap_amdsysfs_handle* sysfsh, int index, char* pcibuf, int bufsize);
 
 ''')
 
@@ -168,17 +160,14 @@ def fsGetGpuInfo():
     if fsHandle:
         count = ffi.new("int*", 0)
         lib.wrap_amdsysfs_get_gpucount(fsHandle, count)
-        name = ffi.new("char[128]")
+        pci = ffi.new("char[128]")
         tempC = ffi.new("unsigned int*", 0)
         fanpcnt = ffi.new("unsigned int*", 0)
         power_usage = ffi.new("unsigned int*", 0)
-        pci = ffi.new("pciInfo*", 0)
         for i in range(count[0]):
             deviceinfo = {}
-            #lib.wrap_nvml_get_gpu_name(fsHandle, i, name, 128)
-            #deviceinfo['name'] = ffi.string(name).decode()
-            lib.wrap_amdsysfs_get_pciInfo(fsHandle, i, pci)
-            deviceinfo['pci'] = str(pci.DeviceId[0]) + ':'+ str(pci.HwMonId[0])+ ':'+ str(pci.PciDomain[0])+ ':'+ str(pci.PciBus[0])+ ':'+ str(pci.PciDevice[0])
+            lib.wrap_nvml_get_gpu_pci(fsHandle, i, pci, 128)
+            deviceinfo['pci'] = ffi.string(pci).decode()
             lib.wrap_amdsysfs_get_tempC(fsHandle, i, tempC)
             deviceinfo['tempC'] = tempC[0]
             lib.wrap_amdsysfs_get_fanpcnt(fsHandle, i, fanpcnt)
@@ -187,7 +176,7 @@ def fsGetGpuInfo():
             deviceinfo['power_usage'] = power_usage[0]
             info.append(deviceinfo)
         ffi.release(count)
-        ffi.release(name)
+        ffi.release(pci)
         ffi.release(tempC)
         ffi.release(fanpcnt)
         ffi.release(power_usage)
