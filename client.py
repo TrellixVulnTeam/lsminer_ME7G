@@ -60,11 +60,11 @@ class lsminerClient(object):
         if self.gpuType == 1:
             return nvmlGetGpuInfo()
         else:
-            return amdGetGpuInfo()
+            return fsGetGpuInfo()
 
     def checkGpuType(self):
         n = nvmlGetGpuCount()
-        a = amdGetGpuCount()
+        a = fsGetGpuCount()
         return  1 if n > a else 2
         
     def connectSrv(self):
@@ -83,8 +83,8 @@ class lsminerClient(object):
                 cnt = nvmlGetGpuCount()
                 name = nvmlGetGpuName()
             else:
-                cnt = amdGetGpuCount()
-                name = amdGetGpuName()
+                cnt = fsGetGpuCount()
+                name = fsGetGpuName()
             
             reqData = {}
             reqData['method'] = 1
