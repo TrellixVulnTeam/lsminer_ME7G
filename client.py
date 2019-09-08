@@ -1,4 +1,4 @@
-
+#!/usr/bin/python3
 from lsminer import *
 import time
 import socket
