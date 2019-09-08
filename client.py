@@ -241,7 +241,7 @@ class lsminerClient(object):
             o = os.popen(cmd).read()
             lines = o.splitlines(False)
             for l in lines:
-                p = l.split(' ')
+                p = l.lstrip().split(' ')
                 if 'grep' in p:
                     continue
                 logging.info('kill task pid: ' + p[0])
