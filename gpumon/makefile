@@ -4,8 +4,8 @@ TARGET  := libgpumon.so
 #编译参数
 CC      := g++
 LIBS    :=
-LDFLAGS := -lstdc++
-DEFINES :=
+LDFLAGS := -lstdc++ -lstdc++fs
+DEFINES := -std=c++17
 INCLUDE := -I.
 CFLAGS  := -g -Wall -O3 -fPIC $(DEFINES) $(INCLUDE)
 CXXFLAGS:= $(CFLAGS) -DHAVE_CONFIG_H
