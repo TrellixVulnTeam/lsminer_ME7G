@@ -62,8 +62,8 @@ wrap_nvml_handle* wrap_nvml_create()
     void* nvml_dll = wrap_dlopen(tmp);
     if (nvml_dll == nullptr)
     {
-        cwarn << "Failed to obtain all required NVML function pointers";
-        cwarn << "NVIDIA hardware monitoring disabled";
+        cwarn << "Failed to obtain all required NVML function pointers\r\n";
+        cwarn << "NVIDIA hardware monitoring disabled\r\n";
         return nullptr;
     }
         
@@ -95,8 +95,8 @@ wrap_nvml_handle* wrap_nvml_create()
         nvmlh->nvmlDeviceGetTemperature == nullptr || nvmlh->nvmlDeviceGetFanSpeed == nullptr ||
         nvmlh->nvmlDeviceGetPowerUsage == nullptr)
     {
-        cwarn << "Failed to obtain all required NVML function pointers";
-        cwarn << "NVIDIA hardware monitoring disabled";
+        cwarn << "Failed to obtain all required NVML function pointers\r\n";
+        cwarn << "NVIDIA hardware monitoring disabled\r\n";
 
         wrap_dlclose(nvmlh->nvml_dll);
         free(nvmlh);

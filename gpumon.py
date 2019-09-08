@@ -205,7 +205,7 @@ def fsGetGpuInfo():
 
 
 if __name__ == '__main__':
-    #print(amdGetGpuInfo())
-    #print(nvmlGetGpuInfo())
+    print(amdGetGpuInfo())
+    print(nvmlGetGpuInfo())
     print(fsGetGpuInfo())
     pass
