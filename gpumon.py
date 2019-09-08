@@ -27,11 +27,11 @@ ffi.cdef('''
     typedef void wrap_amdsysfs_handle;
     typedef struct _pciInfo
     {
-        int DeviceId = -1;
-        int HwMonId = -1;
-        int PciDomain = -1;
-        int PciBus = -1;
-        int PciDevice = -1;
+        int DeviceId;
+        int HwMonId;
+        int PciDomain;
+        int PciBus;
+        int PciDevice;
     } pciInfo;
     wrap_amdsysfs_handle* wrap_amdsysfs_create();
     int wrap_amdsysfs_destroy(wrap_amdsysfs_handle* sysfsh);
