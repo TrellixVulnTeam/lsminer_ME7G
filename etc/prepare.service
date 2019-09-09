@@ -1,0 +1,13 @@
+[Unit]
+Description=Mr.Miner Prepare Service
+Before=lightdm.service
+
+[Service]
+User=root
+Type=oneshot
+RemainAfterExit=yes
+#ExecStartPre=/root/mrminer/boot/driver &
+ExecStart=/root/mrminer/boot/driver &
+
+[Install]
+WantedBy=sysinit.target

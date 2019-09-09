@@ -1,0 +1,13 @@
+[Unit]
+Description=Lsminer Miner Service
+After=lightdm.service
+
+[Service]
+Type=simple
+#RemainAfterExit=yes
+ExecStart=/root/lsminer/boot/miner start
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical.target
