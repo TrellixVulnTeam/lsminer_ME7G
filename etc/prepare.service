@@ -1,5 +1,5 @@
 [Unit]
-Description=Mr.Miner Prepare Service
+Description=Lsminer Prepare Service For Driver
 Before=lightdm.service
 
 [Service]
@@ -7,7 +7,7 @@ User=root
 Type=oneshot
 RemainAfterExit=yes
 #ExecStartPre=/root/mrminer/boot/driver &
-ExecStart=/root/mrminer/boot/driver &
+ExecStart=/home/lsminer/lsminer/boot/driver.sh &
 
 [Install]
 WantedBy=sysinit.target
