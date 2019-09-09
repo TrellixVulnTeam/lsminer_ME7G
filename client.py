@@ -22,11 +22,6 @@ from minerinfo import *
 logging.basicConfig(level = logging.INFO,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-'''
-subprocess = subprocess.Popen('ping www.baidu.com -t', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-for line in iter(subprocess.stdout.readline, ''):
-    print(line.decode('gbk'))
-'''
 
 #commond queue
 q = queue.Queue(0)
@@ -214,8 +209,8 @@ class lsminerClient(object):
                         c.flush()
                         with tarfile.open('./miners/temp.tar.xz') as tar:
                             tar.extractall('./miners')
-                            os.remove('./miners/temp.tar.xz')
-                            self.minerpath = './miners/' + mcfg['minerver'] + '_linux/' + mcfg['minername']
+                            #os.remove('./miners/temp.tar.xz')
+                            self.minerpath = './miners/' + mcfg['minerver'] + '/' + mcfg['minername']
                             return self.minerpath
             except Exception as e:
                 logging.error("function downloadWriteFile exception. msg: " + str(e))
@@ -224,7 +219,7 @@ class lsminerClient(object):
 
     def checkMinerVer(self, mcfg):
         try:
-            mf = './miners/' + mcfg['minerver'] + '_linux'
+            mf = './miners/' + mcfg['minerver']
             if os.path.exists(mf):
                 self.minerpath = mf + '/' + mcfg['minername']
                 return self.minerpath
