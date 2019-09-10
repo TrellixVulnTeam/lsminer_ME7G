@@ -7,11 +7,11 @@ echo ---------------------------
 echo ""
 echo "Files copying..."
 echo ""
-sudo cp -f /root/mrminer/etc/minerscreen.desktop /home/mrminer/.config/autostart/minerscreen.desktop
-sudo cp -f /root/mrminer/etc/wallpaper.jpg /home/mrminer/wallpaper.jpg
-sudo cp -f /root/mrminer/etc/prepare.service /etc/systemd/system/prepare.service
-sudo cp -f /root/mrminer/etc/miner.service /etc/systemd/system/miner.service
-sudo cp -f /root/mrminer/etc/redline.service /etc/systemd/system/redline.service
+sudo cp -f /home/lsminer/lsminer/etc/minerscreen.desktop /home/lsminer/.config/autostart/minerscreen.desktop
+sudo cp -f /home/lsminer/lsminer/etc/wallpaper.jpg /home/lsminer/wallpaper.jpg
+sudo cp -f /home/lsminer/lsminer/etc/prepare.service /etc/systemd/system/prepare.service
+sudo cp -f /home/lsminer/lsminer/etc/miner.service /etc/systemd/system/miner.service
+sudo cp -f /home/lsminer/lsminer/etc/redline.service /etc/systemd/system/redline.service
 sync
 sleep 1
 
