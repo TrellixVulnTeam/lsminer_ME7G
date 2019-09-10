@@ -21,15 +21,39 @@ def getIp():
     '''获取系统内网IP地址'''
     return socket.gethostbyname(getName())
 
+def getAccessKey():
+    try:
+        with open("/home/lsminer.conf", "r", encoding="utf-8") as fs:
+            key = fs.readline()
+            return key
+    except Exception as e:
+        print("function getAccessKey exception. msg: " + str(e))
+    return 0
+
 def loadCfg():
     '''加载当前目录下的配置文件config.json'''
     try:
-        cfg = json.load(open("config.json", "r", encoding="utf-8"))
+        with open("./config.json", "r", encoding="utf-8") as fs:
+            cfg = json.load(fs)
+        if not cfg['accesskey']:
+            cfg['accesskey'] = getAccessKey()
+            saveCfg(cfg)
+        return cfg
     except Exception as e:
         print("function loadCfg exception. msg: " + str(e))
-        return 0
-    return cfg
+    return 0
+    
 
+def saveCfg(cfgdict):
+    '''保存当前目录下的配置文件config.json'''
+    try:
+        with open("./config.json", "w", encoding="utf-8") as fs:
+            json.dump(cfgdict, fs)
+            return 1
+    except Exception as e:
+        print("function saveCfg exception. msg: " + str(e))
+    return 0
+    
 def md5(data):
     '''MD5哈希函数'''
     return str(hashlib.md5(data.encode('utf-8')).hexdigest())
@@ -46,7 +70,7 @@ def getReboot(url):
             return int(f.read().decode('utf-8'))
     except Exception as e:
         print("function getReboot exception. msg: " + str(e))
-        return 0
+    return 0
 
 def getNvidiaCount():
     '''获取NVIDIA显卡的数量'''
@@ -88,6 +112,9 @@ def downloadFile(url, path):
         with request.urlopen(req) as f:
             with open(path, "wb") as p:
                 p.write(f.read())
+                p.flush()
+                return 1
     except Exception as e:
         print("function downloadFile exception. msg: " + str(e))
-        return 0
+    return 0
+

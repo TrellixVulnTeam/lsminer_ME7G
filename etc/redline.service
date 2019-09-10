@@ -3,9 +3,8 @@ Description=Lsminer Reboot Service
 After=lightdm.service
 
 [Service]
-User=root
 Type=simple
-ExecStart=/home/lsminer/lsminer/boot/redline.sh
+ExecStart=/home/lsminer/lsminer/boot/redline start
 Restart=always
 RestartSec=3
 

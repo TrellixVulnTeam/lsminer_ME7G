@@ -14,8 +14,10 @@ while True:
             raise ValueError('config file error!')
         reboot = getReboot(url)
         if reboot:
-            os.system("reboot")
+            print('system will be rebooted')
+            os.system("sudo reboot")
         else:
+            print('sleep 60 seconds...')
             time.sleep(60)
     except Exception as e:
         print("main loop run exception. msg: " + str(e))

@@ -4,8 +4,7 @@ After=lightdm.service
 
 [Service]
 Type=simple
-#RemainAfterExit=yes
-ExecStart=/home/lsminer/lsminer/boot/miner.sh start
+ExecStart=/home/lsminer/lsminer/boot/miner start
 Restart=always
 RestartSec=3
 

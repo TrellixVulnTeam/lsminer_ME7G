@@ -84,8 +84,17 @@ class lsminerClient(object):
             reqData = {}
             reqData['method'] = 1
             reqData['accesskey'] = self.cfg['accesskey']
-            reqData['wkname'] = self.cfg['wkname']
-            reqData['wkid'] = getWkid()
+            
+            if self.cfg['wkname']:
+                reqData['wkname'] = self.cfg['wkname']
+            else:
+                reqData['wkname'] = getIp()
+
+            if self.cfg['wkid']:
+                reqData['wkid'] = self.cfg['wkid']
+            else:
+                reqData['wkid'] = getWkid()
+
             reqData['devicename'] = name
             reqData['devicecnt'] = cnt
             reqData['appver'] = self.cfg['appver']
@@ -182,10 +191,9 @@ class lsminerClient(object):
                 reqData['gpustatus'] = gpustatus
                 reqData = json.dumps(reqData) + '\r\n'
                 return reqData
-            return None
         except Exception as e:
             logging.error("function getReportData exception. msg: " + str(e))
-            return None
+        return None
 
     def reportThread(self):
         while True:
@@ -199,23 +207,20 @@ class lsminerClient(object):
             except Exception as e:
                 logging.error("function reportThread exception. msg: " + str(e))
 
-    def downloadWriteFile(self, mcfg):
-        while True:
-            try:
-                req = request.Request(mcfg['minerurl'])
-                with request.urlopen(req) as f:
-                    with open('./miners/temp.tar.xz', 'wb') as c:
-                        c.write(f.read())
-                        c.flush()
-                        with tarfile.open('./miners/temp.tar.xz') as tar:
-                            tar.extractall('./miners')
-                            #os.remove('./miners/temp.tar.xz')
-                            self.minerpath = './miners/' + mcfg['minerver'] + '/' + mcfg['minername']
-                            return self.minerpath
-            except Exception as e:
-                logging.error("function downloadWriteFile exception. msg: " + str(e))
-                logging.error('downloadWriteFile failed. sleep 3 seconds.')
+    def getNewMinerFile(self, mcfg):
+        try:
+            path = './miners/temp.tar.xz'
+            while not downloadFile(mcfg['minerurl'], path):
+                logging.error("download miner kernel file failed. sleep 3 seconds and try later.")
                 time.sleep(3)
+
+            with tarfile.open(path) as tar:
+                tar.extractall('./miners')
+                #os.remove(path)
+                self.minerpath = './miners/' + mcfg['minerver'] + '/' + mcfg['minername']
+                return self.minerpath
+        except Exception as e:
+            logging.error("function getNewMinerFile exception. msg: " + str(e))
 
     def checkMinerVer(self, mcfg):
         try:
@@ -228,7 +233,7 @@ class lsminerClient(object):
                 os.system(delcmd)
         except Exception as e:
             logging.error("function checkMinerVer exception. msg: " + str(e))
-            return None
+        return None
 
     def killAllMiners(self, path):
         try:
@@ -249,7 +254,7 @@ class lsminerClient(object):
         try:
             mcfg = self.minerargs
             if not self.checkMinerVer(mcfg):
-                self.downloadWriteFile(mcfg)
+                self.getNewMinerFile(mcfg)
             cmd = self.minerpath + ' ' + mcfg['customize']
             process = subprocess.Popen(cmd, shell=True)
             time.sleep(3)
@@ -430,9 +435,3 @@ if __name__ == '__main__':
     client = lsminerClient()
     client.init()
     client.run()
-
-
-
-    
-
-
