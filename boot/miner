@@ -17,7 +17,7 @@ function start()
 	[ "$SCREEN" -gt 1 ] && echo "Miner already running..." && exit
 
 	echo "Miner Starting..."
-	screen -dmS lsminer -t lsminer python3 /home/lsminer/lsminer/update.py
+	screen -dmS lsminer -t lsminer bash -c "/home/lsminer/lsminer/boot/run"
 }
 
 

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /home/lsminer/lsminer
+
 [ -f "/etc/X11/xorg.conf" ] && rm -rf /etc/X11/xorg.conf
 
 IGPU=$(lspci | grep -E "VGA|3D controller" | head -n 1 | grep -vE "NVIDIA|AMD" | wc -l)
@@ -47,7 +49,7 @@ EndSection
 EOF
 
 	else 
-		cp /home/mrminer/xorg.conf.amd /etc/X11/xorg.conf
+		cp /home/lsminer/lsminer/etc/xorg.conf.amd /etc/X11/xorg.conf
 	fi
 	
 	modprobe amdgpu &

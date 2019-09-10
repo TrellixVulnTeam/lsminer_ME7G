@@ -1,0 +1,48 @@
+#!/bin/bash
+cd /home/lsminer/lsminer
+
+function text()
+{
+	local color=${1}
+	shift
+	local text="${@}"
+	case ${color} in
+    	red    ) tput setaf 1 ; tput bold ;;
+    	green  ) tput setaf 2 ; tput bold ;;
+    	yellow ) tput setaf 3 ; tput bold ;;
+    	blue   ) tput setaf 4 ; tput bold ;;
+    	purple ) tput setaf 5 ; tput bold ;;
+		cyan   ) tput setaf 6 ; tput bold ;;
+		white  ) tput setaf 7 ; tput bold ;;
+	esac
+	echo -en "${text}"
+	tput sgr0
+}
+
+function intro()
+{
+	LOGO=$(cat /home/lsminer/lsminer/logo)
+	DARKGRAY='\033[1;30m'
+	RESETCOLOR='\033[0m'
+
+	text cyan "$LOGO\n"
+	text cyan "		     Linux Mining Operating System\n\n\n"
+
+	echo -e "${DARKGRAY}------------------------------------------------------------------------------${RESETCOLOR}\n\n"
+}
+
+intro
+
+text cyan "The miner is starting\n\n"
+
+export CUDA_DEVICE_ORDER=PCI_BUS_ID
+export DISPLAY=:0
+export GPU_MAX_ALLOC_PERCENT=100
+export GPU_MAX_HEAP_SIZE=100
+export GPU_SINGLE_ALLOC_PERCENT=100
+export GPU_USE_SYNC_OBJECTS=1
+export GPU_FORCE_64BIT_PTR=1 # CAUTION !!
+export LD_LIBRARY_PATH=/home/lsminer/lsminer/libcuda
+
+python3 /home/lsminer/lsminer/update.py
+
