@@ -60,7 +60,7 @@ def md5(data):
 
 def getWkid():
     '''获取Wkid(网卡MAC字符串MD5哈希值)'''
-    return md5(getMac())
+    return md5('linux-' + getMac() + '-' + getAccessKey())
 
 def getReboot(url):
     '''检测是否需要重启系统'''
