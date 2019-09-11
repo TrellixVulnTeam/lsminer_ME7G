@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from lsminer import *
+from tools import *
 import time
 import socket
 import uuid
@@ -19,9 +19,7 @@ import signal
 from gpumon import *
 from minerinfo import *
 
-logging.basicConfig(level = logging.INFO,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
+logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt = '%Y-%m-%d  %H:%M:%S %a')
 
 #commond queue
 q = queue.Queue(0)
@@ -69,6 +67,7 @@ class lsminerClient(object):
             self.sock.settimeout(None)
         except Exception as e:
             logging.error('connectSrv exception. msg: ' + str(e))
+            logging.exception(e)
             time.sleep(3)
             q.put(1)
     
@@ -84,7 +83,7 @@ class lsminerClient(object):
             reqData = {}
             reqData['method'] = 1
             reqData['accesskey'] = self.cfg['accesskey']
-            
+
             if self.cfg['wkname']:
                 reqData['wkname'] = self.cfg['wkname']
             else:
@@ -106,6 +105,7 @@ class lsminerClient(object):
             self.sock.sendall(reqjson.encode("utf-8"))
         except Exception as e:
             logging.error('sendLoginReq exception. msg: ' + str(e))
+            logging.exception(e)
             return None     
 
     def sendGetMinerArgsReq(self):
@@ -118,6 +118,7 @@ class lsminerClient(object):
             self.sock.sendall(reqjson.encode("utf-8"))
         except Exception as e:
             logging.error('sendGetMinerArgsReq exception. msg: ' + str(e))
+            logging.exception(e)
             return None
 
     def sendLogoutReq(self):
@@ -130,17 +131,7 @@ class lsminerClient(object):
             self.sock.sendall(reqjson.encode("utf-8"))
         except Exception as e:
             logging.error('sendLogoutReq exception. msg: ' + str(e))
-            return None
-
-    def loadCfg(self):
-        try:
-            self.cfg = loadCfg()
-            if self.cfg == 0:
-                raise ValueError('loadcfg error!')
-            if 'ip' not in self.cfg or 'port' not in self.cfg:
-                raise ValueError('config file error. missing ip or port!')
-        except Exception as e:
-            logging.error('sendGetMinerArgsReq exception. msg: ' + str(e))
+            logging.exception(e)
             return None
 
     def onWelcome(self, msg):
@@ -193,6 +184,7 @@ class lsminerClient(object):
                 return reqData
         except Exception as e:
             logging.error("function getReportData exception. msg: " + str(e))
+            logging.exception(e)
         return None
 
     def reportThread(self):
@@ -206,6 +198,7 @@ class lsminerClient(object):
                 self.sock.sendall(reqData.encode('utf-8'))
             except Exception as e:
                 logging.error("function reportThread exception. msg: " + str(e))
+                logging.exception(e)
 
     def getNewMinerFile(self, mcfg):
         try:
@@ -221,6 +214,7 @@ class lsminerClient(object):
                 return self.minerpath
         except Exception as e:
             logging.error("function getNewMinerFile exception. msg: " + str(e))
+            logging.exception(e)
 
     def checkMinerVer(self, mcfg):
         try:
@@ -233,6 +227,7 @@ class lsminerClient(object):
                 os.system(delcmd)
         except Exception as e:
             logging.error("function checkMinerVer exception. msg: " + str(e))
+            logging.exception(e)
         return None
 
     def killAllMiners(self, path):
@@ -263,7 +258,9 @@ class lsminerClient(object):
             self.minertime = datetime.now()
         except Exception as e:
             logging.error("function minerThread exception. msg: " + str(e))
+            logging.exception(e)
 
+    #unused function
     def onGetMinerArgs(self, msg):
         try:
             if 'result' in msg and msg['result']:
@@ -289,12 +286,14 @@ class lsminerClient(object):
                 q.put(3)
         except Exception as e:
             logging.error("function onGetMinerArgs exception. msg: " + str(e))
+            logging.exception(e)
 
+    #unused function
     def minerThread(self):
         try:
             mcfg = self.minerargs
             if not self.checkMinerVer(mcfg):
-                self.downloadWriteFile(mcfg)
+                self.getNewMinerFile(mcfg)
 
             args = []
             args.append(self.minerpath)
@@ -309,6 +308,7 @@ class lsminerClient(object):
                 q.put(3)
         except Exception as e:
             logging.error("function minerThread exception. msg: " + str(e))
+            logging.exception(e)
 
     def onGetMinerArgsbak(self, msg):
         try:
@@ -339,6 +339,7 @@ class lsminerClient(object):
                 q.put(3)
         except Exception as e:
             logging.error("function onGetMinerArgs exception. msg: " + str(e))
+            logging.exception(e)
 
     def onReportResp(self, msg):
         pass
@@ -381,6 +382,7 @@ class lsminerClient(object):
                 logging.info('unknown server msg method! msg: ' + str(msg))
         else:
             logging.info('unknown server msg! msg: ' + str(msg))
+            logging.exception(e)
 
 
     def recvThread(self):
@@ -399,6 +401,7 @@ class lsminerClient(object):
                     buffer = ''
         except Exception as e:
             logging.info('recvThread exception. msg: ' + str(e))
+            logging.exception(e)
             time.sleep(1)
 
     '''cmd list: 1 == connect server, 2 == login server, 3 == get miner config'''
@@ -415,7 +418,7 @@ class lsminerClient(object):
             logging.error('unknown cmd. cmd: ' + str(cmd))
 
     def init(self):
-        self.loadCfg()
+        self.cfg = loadCfg()
         thread = threading.Thread(target=lsminerClient.recvThread, args=(self,))
         thread.start()
 
@@ -427,6 +430,7 @@ class lsminerClient(object):
                 self.processCmd(cmd)
             except Exception as e:
                 logging.info("main loop run exception. msg: " + str(e))
+                logging.exception(e)
                 logging.info("sleep 3 seconds and retry...")
                 time.sleep(3)
 

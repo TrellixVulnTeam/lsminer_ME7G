@@ -7,8 +7,8 @@ echo ---------------------------
 echo ""
 echo "Files copying..."
 echo ""
-sudo cp -f /home/lsminer/lsminer/etc/minerscreen.desktop /home/lsminer/.config/autostart/minerscreen.desktop
-sudo cp -f /home/lsminer/lsminer/etc/wallpaper.jpg /home/lsminer/wallpaper.jpg
+cp -f /home/lsminer/lsminer/etc/minerscreen.desktop /home/lsminer/.config/autostart/minerscreen.desktop
+cp -f /home/lsminer/lsminer/etc/wallpaper.jpg /home/lsminer/wallpaper.jpg
 sudo cp -f /home/lsminer/lsminer/etc/prepare.service /etc/systemd/system/prepare.service
 sudo cp -f /home/lsminer/lsminer/etc/miner.service /etc/systemd/system/miner.service
 sudo cp -f /home/lsminer/lsminer/etc/redline.service /etc/systemd/system/redline.service

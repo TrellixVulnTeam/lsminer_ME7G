@@ -44,5 +44,24 @@ export GPU_USE_SYNC_OBJECTS=1
 export GPU_FORCE_64BIT_PTR=1 # CAUTION !!
 export LD_LIBRARY_PATH=/home/lsminer/lsminer/libcuda
 
+#检查accesskey文件是否正常，如果为空，用户必须手动输入accesskey
+echo ACCESSKEY=$(cat /home/lsminer.conf | cut -d ' ' -f 1 | tr '[:upper:]' '[:lower:]' | tr -d '\r' | tr -d '\n')
+
+if [ -z "$ACCESSKEY" ]; then
+
+	echo CURRENT_ACCESSKEY=$(cat /home/lsminer.conf | cut -d ' ' -f 1 | tr '[:upper:]' '[:lower:]' | tr -d '\r' | tr -d '\n')
+	NEW_ACCESSKEY=''
+	while [ -z "$NEW_ACCESSKEY"]; do
+		NEW_ACCESSKEY=$(DISPLAY=:0 sudo zenity --entry --text="\n\n你必须设置Accesskey使设备和账号进行绑定，登陆后台可以查看Accesskey，或者联系客服。\n"  --title="更改Accesskey" --width=600 --height=220 --entry-text="$CURRENT_EMAIL")
+		wait && sleep 1
+	done
+	
+	echo "$NEW_ACCESSKEY" | sudo tee /home/lsminer.conf > /dev/null 2>&1
+	DISPLAY=:0 sudo zenity --info --text="\n<b>Accesskey已经成功修改!</b>" --ellipsize 
+
+fi
+
+wait && sync && sleep 1
+
 python3 /home/lsminer/lsminer/update.py
 

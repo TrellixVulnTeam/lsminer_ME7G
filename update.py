@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from lsminer import *
+from tools import *
 import os
 import sys
 import time
@@ -9,6 +9,9 @@ import subprocess
 import tarfile
 import hashlib
 
+import logging
+
+logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt = '%Y-%m-%d  %H:%M:%S %a')
 
 headers = {
     'Accept':'*/*',
@@ -53,44 +56,43 @@ def checkClientUpdate(ver, url):
                         with tarfile.open(filepath) as tar:
                             tar.extractall('./miners')
                             #os.remove(path)
-                            
+
                         cfg = loadCfg()
                         cfg['appver'] = resdict['appver']
                         if saveCfg(cfg):
-                            print("config file appver update ok.")
+                            logging.info("config file appver update ok.")
                     else:
-                        print("lsminer client package md5 hash wrong. sleep 3 seconds and try later.")
+                        logging.warning("lsminer client package md5 hash wrong. sleep 3 seconds and try later.")
                 else:
-                    print("download lsminer client package file failed. sleep 3 seconds and try later.")
+                    logging.warning("lsminer client download lsminer client package file failed. sleep 3 seconds and try later.")
                 time.sleep(3) 
         else:
-            print(resdict['error'])
+            logging.error(resdict['error'])
 
     except Exception as e:
-        print("function reportThread exception. msg: " + str(e))
+        logging.error("function reportThread exception. msg: " + str(e))
+        logging.exception(e)
 
 if __name__ == '__main__':
     try:
         cfg = loadCfg()
-        if cfg == 0:
-            raise ValueError('loadcfg error!')
-        if 'appver' not in cfg or 'updateapi' not in cfg:
-            raise ValueError('config file error. missing updateapi or appver!')
-        
         if checkClientUpdate(cfg['appver'], cfg['updateapi']):
-            print('client has been updated. lsminer client will restart later.')
+            logging.info('client has been updated. lsminer client will restart later.')
             sys.exit(1)
         
         while True:
             process = subprocess.run('python3 ./client.py')
             if process.returncode == 123:
                 if checkClientUpdate(cfg['appver'], cfg['updateapi']):
-                    print('client has been updated. lsminer client will restart later.')
+                    logging.info('client has been updated. lsminer client will restart later.')
                     sys.exit(1)
                 else:
-                    print('client recv update msg, but version in server is not updated!')
+                    logging.warning('client recv update msg, but version in server is not updated!')
+            else:
+                logging.warning('client exit! sleep 3 seconds and try start again.')
+                time.sleep(3)
 
     except Exception as e:
-        print('update.py function __main__ exception. msg: ' + str(e))
-
+        logging.error('update.py function __main__ exception. msg: ' + str(e))
+        logging.exception(e)
     
