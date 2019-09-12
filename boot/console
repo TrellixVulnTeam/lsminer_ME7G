@@ -1,0 +1,61 @@
+#!/bin/bash
+
+cd /home/lsminer/lsminer
+
+function usage()
+{
+	printf "console\n\n"
+	printf "Usage: console [OPTION]\n\n"
+	printf "start: Start console Service\n"
+	printf "stop: Stop console Service\n"
+	printf "restart: Restart console Service\n"
+
+}
+
+function start()
+{
+
+	SCREEN=$(screen -ls teleconsole | grep teleconsole | wc -l)
+	[ "$SCREEN" -gt 1 ] && echo "teleconsole service already running..." && exit
+
+	echo "teleconsole Starting..."
+
+	screen -dm -S teleconsole -t teleconsole  bash -c "python3 /home/lsminer/lsminer/teleconsole.py"
+
+}
+
+
+function stop()
+{
+	screens=`screen -ls teleconsole | grep -E "[0-9]+\.teleconsole" | cut -d. -f1 | awk '{print $1}'`
+
+	if [[ -z $screens ]]; then
+		echo "No teleconsole screens found"
+	else
+		for pid in $screens; do
+			echo "Stopping screen session: $pid.teleconsole"
+			screen -S $pid -X quit
+		done
+	fi
+}
+
+
+
+case $1 in
+	start)
+		start
+	;;
+	stop)
+		stop
+	;;
+	restart)
+
+		echo "Restarting console"
+		stop
+		sleep 1
+		start
+	;;
+	*)
+		usage
+	;;
+esac

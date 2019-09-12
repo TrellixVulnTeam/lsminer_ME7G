@@ -1,0 +1,12 @@
+[Unit]
+Description=Teleconsole Service
+After=lightdm.service
+
+[Service]
+Type=forking
+ExecStart=/home/lsminer/lsminer/boot/console start
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical.target
