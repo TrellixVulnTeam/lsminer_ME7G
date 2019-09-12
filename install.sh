@@ -1,4 +1,7 @@
 #!/bin/bash
+
+cd /home/lsminer/lsminer
+
 sync
 
 echo ""

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /home/lsminer/lsminer
+
 function usage()
 {
 	printf "Miner Control\n\n"
@@ -17,7 +19,7 @@ function start()
 	[ "$SCREEN" -gt 1 ] && echo "Miner already running..." && exit
 
 	echo "Miner Starting..."
-	screen -dmS lsminer -t lsminer bash -c "/home/lsminer/lsminer/boot/run"
+	screen -dm -S lsminer -t lsminer bash -c "/home/lsminer/lsminer/boot/run"
 }
 
 

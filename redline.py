@@ -1,13 +1,11 @@
 import time
 import os
-from lsminer import *
+from tools import *
 
 '''循环检测云端指令是否需要重启系统'''
 while True:
     try:
         cfg = loadCfg()
-        if cfg == 0:
-            raise ValueError('loadcfg error!')
         if 'reboot' in cfg:
             url = cfg['reboot'] + getWkid()
         else:

@@ -19,7 +19,7 @@ function start()
 	[ "$SCREEN" -gt 1 ] && echo "redline deamon already running..." && exit
 
 	echo "Redline Deamon Starting..."
-	screen -dmS redline -t redline python3 /home/lsminer/lsminer/redline.py
+	screen -dm -S redline -t redline  bash -c "python3 /home/lsminer/lsminer/redline.py"
 }
 
 
