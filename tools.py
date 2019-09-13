@@ -95,6 +95,20 @@ def md5(data):
     '''MD5哈希函数'''
     return str(hashlib.md5(data.encode('utf-8')).hexdigest())
 
+def getFileMd5(file_path):
+    """get file md5"""
+    try:
+        with open(file_path, 'rb') as f:
+            md5obj = hashlib.md5()
+            md5obj.update(f.read())
+            _hash = md5obj.hexdigest()
+            return str(_hash).lower()
+    except Exception as e:
+        logging.error("function getFileMd5 exception. msg: " + str(e))
+        logging.exception(e)
+    return ''
+
+
 def getWkid():
     '''获取Wkid(网卡MAC字符串MD5哈希值)'''
     return md5('linux-' + getMac() + '-' + getAccessKey())

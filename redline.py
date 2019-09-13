@@ -12,8 +12,8 @@ while True:
             raise ValueError('config file error!')
         reboot = getReboot(url)
         if reboot:
-            print('system will be rebooted')
-            os.system("sudo reboot")
+            print('system will be reboot')
+            #os.system("sudo reboot")
         else:
             print('sleep 60 seconds...')
             time.sleep(60)

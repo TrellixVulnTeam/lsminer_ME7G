@@ -246,8 +246,6 @@ class lsminerClient(object):
 
     def killAllMiners(self, path):
         try:
-            os.system("screen -S lsminer -X quit")
-            time.sleep(1)
             cmd = 'ps -x | grep ' + path
             o = os.popen(cmd).read()
             lines = o.splitlines(False)
@@ -370,7 +368,9 @@ class lsminerClient(object):
         #kill miner process, exit client.py
         if self.minerpath:
             self.killAllMiners(self.minerpath[1:])
-        os.exit(123)
+        self.sock.close()
+        time.sleep(0.5)
+        sys.exit(123)
 
     def onGetConsoleId(self, msg):
         subprocess.run('systemctl restart console', shell=True)
