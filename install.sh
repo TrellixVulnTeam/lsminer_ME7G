@@ -36,10 +36,10 @@ sleep 1
 
 echo "Activating services..."
 echo ""
-[ ! -f /etc/systemd/system/prepare.service ] && echo "Service loaded: prepare" && systemctl enable prepare
-[ ! -f /etc/systemd/system/miner.service ] && echo "Service loaded: miner" && systemctl enable miner
-[ ! -f /etc/systemd/system/redline.service ] && echo "Service loaded: redline" && systemctl enable redline
-[ ! -f /etc/systemd/system/teleconsole.service ] && echo "Service loaded: teleconsole" && systemctl enable teleconsole
+[ -f /etc/systemd/system/prepare.service ] && echo "Service loaded: prepare" && systemctl enable prepare
+[ -f /etc/systemd/system/miner.service ] && echo "Service loaded: miner" && systemctl enable miner
+[ -f /etc/systemd/system/redline.service ] && echo "Service loaded: redline" && systemctl enable redline
+[ -f /etc/systemd/system/teleconsole.service ] && echo "Service loaded: teleconsole" && systemctl enable teleconsole
 
 echo "Setting permissions..."
 echo ""
