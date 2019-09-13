@@ -411,7 +411,7 @@ class lsminerClient(object):
             elif msg['method'] == 15:
                 pass
             elif msg['method'] == 16:
-                pass
+                self.onGetConsoleId(msg)
             else:
                 logging.info('unknown server msg method! msg: ' + str(msg))
         else:
