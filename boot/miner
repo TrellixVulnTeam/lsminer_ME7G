@@ -50,7 +50,7 @@ case $1 in
 
 		echo "Restarting miner"
 		stop
-		sleep 1
+		wait && sync && sleep 1
 		start
 	;;
 	*)

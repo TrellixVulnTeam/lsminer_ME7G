@@ -38,6 +38,7 @@ def get_file_md5(file_path):
     return str(_hash).lower()
 
 
+
 def checkClientUpdate(ver, url):
     ''' return true = client has been updated or false = client has not been updated.'''
     try:
@@ -49,18 +50,14 @@ def checkClientUpdate(ver, url):
             resdict = json.loads(f.read().decode('utf-8'))
 
         if resdict['result']:
-            filepath = './' + resdict['appname']
+            filepath = './update.tar.gz'
             while True:
                 if downloadFile(resdict['appurl'], filepath):
                     if get_file_md5(filepath) == resdict['appmd5']:
-                        with tarfile.open(filepath) as tar:
-                            tar.extractall('./miners')
+                        print('file download ok.')
+                        #with tarfile.open(filepath) as tar:
+                            #tar.extractall('./')
                             #os.remove(path)
-
-                        cfg = loadCfg()
-                        cfg['appver'] = resdict['appver']
-                        if saveCfg(cfg):
-                            logging.info("config file appver update ok.")
                     else:
                         logging.warning("lsminer client package md5 hash wrong. sleep 3 seconds and try later.")
                 else:
@@ -73,21 +70,50 @@ def checkClientUpdate(ver, url):
         logging.error("function reportThread exception. msg: " + str(e))
         logging.exception(e)
 
+def stopService():
+    subprocess.run('systemctl stop redline', shell=True)
+    subprocess.run('systemctl stop teleconsole', shell=True)
+    subprocess.run('systemctl stop miner', shell=True)
+
+def startService():
+    subprocess.run('systemctl start redline', shell=True)
+    subprocess.run('systemctl start teleconsole', shell=True)
+    subprocess.run('systemctl start miner', shell=True)
+
+def checkLocalUpdate():
+    try:
+        filepath = './update.tar.gz'
+        if os.path.exists(filepath):
+            stopService()
+            with tarfile.open(filepath) as tar:
+                tar.extractall('./')
+            startService()
+
+    except Exception as e:
+        logging.error("function checkLocalUpdate exception. msg: " + str(e))
+        logging.exception(e)
+
 if __name__ == '__main__':
     try:
         cfg = loadCfg()
-        if checkClientUpdate(cfg['appver'], cfg['updateapi']):
+        updateurl = cfg['updateapi']
+        appver = getClientVersion()
+
+        if checkLocalUpdate(appver):
+            sys.exit(1)
+
+        if checkClientUpdate(appver, updateurl):
             logging.info('client has been updated. lsminer client will restart later.')
+            subprocess.run('systemctl restart miner', shell=True)
             sys.exit(1)
         
         while True:
-            process = subprocess.run('python3 ./client.py')
+            process = subprocess.run('python3 ./client.py', shell=True)
             if process.returncode == 123:
-                if checkClientUpdate(cfg['appver'], cfg['updateapi']):
+                if checkClientUpdate(appver, updateurl):
                     logging.info('client has been updated. lsminer client will restart later.')
+                    subprocess.run('systemctl restart miner', shell=True)
                     sys.exit(1)
-                else:
-                    logging.warning('client recv update msg, but version in server is not updated!')
             else:
                 logging.warning('client exit! sleep 3 seconds and try start again.')
                 time.sleep(3)

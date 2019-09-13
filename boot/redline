@@ -50,7 +50,7 @@ case $1 in
 
 		echo "Restarting rdline deamon..."
 		stop
-		sleep 1
+		wait && sync && sleep 1
 		start
 	;;
 	*)

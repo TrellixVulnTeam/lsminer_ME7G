@@ -18,7 +18,6 @@ defaultConfig = {
     "accesskey":"",
     "wkid":"",
     "wkname":"",
-    "appver":100,
     "driverver":"230",
     "os":2,
     "reportime":30,
@@ -40,12 +39,26 @@ def getIp():
     return socket.gethostbyname(getName())
 
 def getAccessKey():
+    '''获取用户Accesskey'''
     try:
         with open("/home/lsminer.conf", "r", encoding="utf-8") as fs:
             key = fs.readline()
             return key
     except Exception as e:
         logging.error("function getAccessKey exception. msg: " + str(e))
+        logging.exception(e)
+    return 0
+
+def getClientVersion():
+    '''获取客户端版本号'''
+    try:
+        with open("/home/lsminer/lsminer/version", "r", encoding="utf-8") as fs:
+            ver = fs.readline()
+            if not ver:
+                ver = 100
+            return int(ver)
+    except Exception as e:
+        logging.error("function getClientVersion exception. msg: " + str(e))
         logging.exception(e)
     return 0
 

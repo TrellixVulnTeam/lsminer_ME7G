@@ -15,26 +15,64 @@ function usage()
 function start()
 {
 
-	SCREEN=$(screen -ls teleconsole | grep teleconsole | wc -l)
-	[ "$SCREEN" -gt 1 ] && echo "teleconsole service already running..." && exit
+	SCREEN=$(screen -ls console | grep console | wc -l)
+	[ "$SCREEN" -gt 1 ] && echo "console service already running..." && exit
 
-	echo "teleconsole Starting..."
+	echo "console Starting..."
 
-	screen -dm -S teleconsole -t teleconsole  bash -c "python3 /home/lsminer/lsminer/teleconsole.py"
+	if [ -f "/home/lsminer/screen_console.log" ]; then
+	 	sudo rm -rf /home/lsminer/screen_console.log
+	fi
+
+	if [ -f "/home/lsminer/teleconsole.id" ]; then
+	 	sudo rm -rf /home/lsminer/teleconsole.id
+	fi
+
+	screen -dm -S console -t console -L bash -c "/home/lsminer/lsminer/teleconsole"
+
+	sleep 10
+
+	TELELOG=$(cat /home/lsminer/screen_console.log | grep -m1 "WebUI for this session: ")
+
+	if [[ ! -z $TELELOG ]]; then
+		
+		TELELOG=$(sed "s,$(printf '\033')\\[[0-9;]*[a-zA-Z],,g" <<< "$TELELOG")
+		TELECONSOLE_ID=$(awk '{print $NF}' <<< "$TELELOG")
+		echo "Teleconsole ID generated: $TELECONSOLE_ID"
+		echo $TELECONSOLE_ID | tee /home/lsminer/teleconsole.id
+		wait && sync && sleep 1
+		echo "Write!"
+
+	else 
+
+		sleep 10
+
+		TELELOG=$(cat /home/lsminer/screen_console.log | grep -m1 "WebUI for this session: ")
+
+		TELELOG=$(sed "s,$(printf '\033')\\[[0-9;]*[a-zA-Z],,g" <<< "$TELELOG")
+		TELECONSOLE_ID=$(awk '{print $NF}' <<< "$TELELOG")
+		echo "Teleconsole ID generated: $TELECONSOLE_ID"
+		echo $TELECONSOLE_ID | tee /home/lsminer/teleconsole.id
+		wait && sync && sleep 1
+		echo "Write!"
+
+	fi
 
 }
 
 
 function stop()
 {
-	screens=`screen -ls teleconsole | grep -E "[0-9]+\.teleconsole" | cut -d. -f1 | awk '{print $1}'`
+	screens=`screen -ls console | grep -E "[0-9]+\.console" | cut -d. -f1 | awk '{print $1}'`
 
 	if [[ -z $screens ]]; then
-		echo "No teleconsole screens found"
+		echo "No console screens found"
 	else
 		for pid in $screens; do
-			echo "Stopping screen session: $pid.teleconsole"
+			echo "Stopping screen session: $pid.console"
 			screen -S $pid -X quit
+			sudo rm -rf /home/lsminer/screen_console.log
+			sudo rm -rf /home/lsminer/teleconsole.id
 		done
 	fi
 }
@@ -52,7 +90,7 @@ case $1 in
 
 		echo "Restarting console"
 		stop
-		sleep 1
+		wait && sync && sleep 1
 		start
 	;;
 	*)

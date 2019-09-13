@@ -2,6 +2,20 @@
 
 cd /home/lsminer/lsminer
 
+sudo apt-get install python3-pip screen -y
+sudo pip3 install cffi
+
+
+sudo chmod a+x /home/lsminer/lsminer/client.py
+sudo chmod a+x /home/lsminer/lsminer/update.py
+sudo chmod a+x /home/lsminer/lsminer/redline.py
+sudo chmod a+x /home/lsminer/lsminer/teleconsole
+sudo chmod a+x /home/lsminer/lsminer/boot/run
+sudo chmod a+x /home/lsminer/lsminer/boot/miner
+sudo chmod a+x /home/lsminer/lsminer/boot/driver
+sudo chmod a+x /home/lsminer/lsminer/boot/redline
+sudo chmod a+x /home/lsminer/lsminer/boot/console
+
 sync
 
 echo ""
@@ -15,6 +29,8 @@ cp -f /home/lsminer/lsminer/etc/wallpaper.jpg /home/lsminer/wallpaper.jpg
 sudo cp -f /home/lsminer/lsminer/etc/prepare.service /etc/systemd/system/prepare.service
 sudo cp -f /home/lsminer/lsminer/etc/miner.service /etc/systemd/system/miner.service
 sudo cp -f /home/lsminer/lsminer/etc/redline.service /etc/systemd/system/redline.service
+sudo cp -f /home/lsminer/lsminer/etc/teleconsole.service /etc/systemd/system/teleconsole.service
+sudo cp -f /home/lsminer/lsminer/etc/screenrc /etc/screenrc
 sync
 sleep 1
 
@@ -23,6 +39,7 @@ echo ""
 [ ! -f /etc/systemd/system/prepare.service ] && echo "Service loaded: prepare" && systemctl enable prepare
 [ ! -f /etc/systemd/system/miner.service ] && echo "Service loaded: miner" && systemctl enable miner
 [ ! -f /etc/systemd/system/redline.service ] && echo "Service loaded: redline" && systemctl enable redline
+[ ! -f /etc/systemd/system/teleconsole.service ] && echo "Service loaded: teleconsole" && systemctl enable teleconsole
 
 echo "Setting permissions..."
 echo ""

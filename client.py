@@ -26,17 +26,17 @@ q = queue.Queue(0)
 
 class lsminerClient(object):
     def __init__(self):
-        self.state = None
-        self.cfg = None
+        self.cfg = {}
         self.sock = None
-        self.minerargs = None
-        self.minerpath = None
+        self.minerargs = {}
+        self.minerpath = ''
         self.subprocess = None
         self.mthread = None
         self.rthread = None
         self.startime = datetime.now()
         self.gpuType = self.checkGpuType()    #nvidia==1, amd==2
         self.minertime = datetime.now()
+        self.consoleurl = ''
 
     def __del__(self):
         pass
@@ -96,7 +96,7 @@ class lsminerClient(object):
 
             reqData['devicename'] = name
             reqData['devicecnt'] = cnt
-            reqData['appver'] = self.cfg['appver']
+            reqData['appver'] = getClientVersion()
             reqData['platform'] = self.gpuType
             reqData['driverver'] = self.cfg['driverver']
             reqData['os'] = self.cfg['os']
@@ -131,6 +131,20 @@ class lsminerClient(object):
             self.sock.sendall(reqjson.encode("utf-8"))
         except Exception as e:
             logging.error('sendLogoutReq exception. msg: ' + str(e))
+            logging.exception(e)
+            return None
+
+    def sendConsoleIdReq(self):
+        try:
+            reqData = {}
+            reqData['method'] = 16
+            reqData['params'] = self.consoleurl
+            reqData['os'] = self.cfg['os']
+            reqjson = json.dumps(reqData)
+            reqjson += '\r\n'
+            self.sock.sendall(reqjson.encode("utf-8"))
+        except Exception as e:
+            logging.error('sendConsoleIdReq exception. msg: ' + str(e))
             logging.exception(e)
             return None
 
@@ -232,6 +246,8 @@ class lsminerClient(object):
 
     def killAllMiners(self, path):
         try:
+            os.system("screen -S lsminer -X quit")
+            time.sleep(1)
             cmd = 'ps -x | grep ' + path
             o = os.popen(cmd).read()
             lines = o.splitlines(False)
@@ -260,7 +276,7 @@ class lsminerClient(object):
             logging.error("function minerThread exception. msg: " + str(e))
             logging.exception(e)
 
-    #unused function
+    
     def onGetMinerArgs(self, msg):
         try:
             if 'result' in msg and msg['result']:
@@ -288,7 +304,7 @@ class lsminerClient(object):
             logging.error("function onGetMinerArgs exception. msg: " + str(e))
             logging.exception(e)
 
-    #unused function
+    #unused function minerThread
     def minerThread(self):
         try:
             mcfg = self.minerargs
@@ -310,6 +326,7 @@ class lsminerClient(object):
             logging.error("function minerThread exception. msg: " + str(e))
             logging.exception(e)
 
+    #unused function onGetMinerArgsbak
     def onGetMinerArgsbak(self, msg):
         try:
             if 'result' in msg and msg['result']:
@@ -348,6 +365,19 @@ class lsminerClient(object):
         logging.info('recv update miner args commond.')
         q.put(3)
 
+    def onClientUpdate(self, msg):
+        logging.info('client recv update msg! exit and update now.')
+        #kill miner process, exit client.py
+        if self.minerpath:
+            self.killAllMiners(self.minerpath[1:])
+        os.exit(123)
+
+    def onGetConsoleId(self, msg):
+        subprocess.run('systemctl restart console', shell=True)
+        thread = threading.Thread(target=lsminerClient.teleconsoleProc, args=(self,))
+        thread.start()
+
+
     def processMsg(self, msg):
         if 'method' in msg:
             if msg['method'] == 1:
@@ -377,6 +407,10 @@ class lsminerClient(object):
             elif msg['method'] == 13:
                 pass
             elif msg['method'] == 14:
+                pass
+            elif msg['method'] == 15:
+                pass
+            elif msg['method'] == 16:
                 pass
             else:
                 logging.info('unknown server msg method! msg: ' + str(msg))
@@ -414,11 +448,33 @@ class lsminerClient(object):
             self.sendGetMinerArgsReq()
         elif cmd == 6:
             self.sendLogoutReq()
+        elif cmd == 16:
+            self.sendConsoleIdReq()
         else:
             logging.error('unknown cmd. cmd: ' + str(cmd))
 
+    def teleconsoleProc(self):
+        filepath = "/home/lsminer/teleconsole.id"
+        while True:
+            try:
+                if not os.path.exists(filepath):
+                    time.sleep(10)
+                    continue
+
+                with open(filepath, "r", encoding="utf-8") as fs:
+                    self.consoleurl = fs.readline()
+                    logging.info("get consoleurl: " + str(self.consoleurl))
+                q.put(16)
+            except Exception as e:
+                logging.info('teleconsoleProc exception. msg: ' + str(e))
+                logging.exception(e)
+                time.sleep(10)
+        
+
     def init(self):
         self.cfg = loadCfg()
+        thread = threading.Thread(target=lsminerClient.teleconsoleProc, args=(self,))
+        thread.start()
         thread = threading.Thread(target=lsminerClient.recvThread, args=(self,))
         thread.start()
 

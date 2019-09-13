@@ -4,6 +4,9 @@ import socket
 import uuid
 import json
 import os
+import logging
+
+logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt = '%Y-%m-%d  %H:%M:%S %a')
 
 def getMinerStatus_trex(msdict):
 	try:
@@ -16,8 +19,8 @@ def getMinerStatus_trex(msdict):
 			minerstatus['totalhashrate'] += device['hashrate']
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_trex exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_trex exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 def getMinerStatus_nbminer(msdict):
@@ -31,8 +34,8 @@ def getMinerStatus_nbminer(msdict):
 			minerstatus['totalhashrate'] += device['hashrate_raw']
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_nbminer exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_nbminer exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 def getMinerStatus_gminer(msdict):
@@ -46,8 +49,8 @@ def getMinerStatus_gminer(msdict):
 			minerstatus['totalhashrate'] += device['speed']
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_gminer exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_gminer exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 def getMinerStatus_ewbfminer(msdict):
@@ -61,8 +64,8 @@ def getMinerStatus_ewbfminer(msdict):
 			minerstatus['totalhashrate'] += device['speed_sps']
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_ewbfminer exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_ewbfminer exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 def getMinerStatus_bminer(msdict):
@@ -76,8 +79,8 @@ def getMinerStatus_bminer(msdict):
 			minerstatus['totalhashrate'] += device['solver']['solution_rate']
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_bminer exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_bminer exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 def getMinerStatus_kbminer(msdict):
@@ -90,8 +93,8 @@ def getMinerStatus_kbminer(msdict):
 			minerstatus['totalhashrate'] += hashrate
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_kbminer exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_kbminer exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 def getMinerStatus_hspminer(msdict, aid):
@@ -117,8 +120,8 @@ def getMinerStatus_hspminer(msdict, aid):
 			minerstatus['totalhashrate'] += device[k]
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_hspminer exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_hspminer exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 def getMinerStatus_lolminer(msdict):
@@ -132,8 +135,8 @@ def getMinerStatus_lolminer(msdict):
 			minerstatus['totalhashrate'] += device['Performance']
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_lolminer exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_lolminer exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 def getMinerStatus_wildrigminer(msdict):
@@ -147,8 +150,8 @@ def getMinerStatus_wildrigminer(msdict):
 			minerstatus['totalhashrate'] += hashrate[0]
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_wildrigminer exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_wildrigminer exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 def getMinerStatus_srbminer(msdict):
@@ -162,8 +165,8 @@ def getMinerStatus_srbminer(msdict):
 			minerstatus['totalhashrate'] += device['hashrate']
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_srbminer exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_srbminer exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 def getMinerStatus_xmrigminer(msdict):
@@ -177,8 +180,8 @@ def getMinerStatus_xmrigminer(msdict):
 			minerstatus['totalhashrate'] += hashrate[0]
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_wildrigminer exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_wildrigminer exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 #tcp
@@ -194,8 +197,8 @@ def getMinerStatus_claymoreminer(msdict):
 			minerstatus['totalhashrate'] += hashrate
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_wildrigminer exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_wildrigminer exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 def getMinerStatus_CryptoDredgeMiner(buf):
@@ -210,8 +213,8 @@ def getMinerStatus_CryptoDredgeMiner(buf):
 			minerstatus['totalhashrate'] += hashrate
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_CryptoDredgeMiner exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_CryptoDredgeMiner exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 def getMinerStatus_TeamRedMiner(buf):
@@ -226,8 +229,8 @@ def getMinerStatus_TeamRedMiner(buf):
 			minerstatus['totalhashrate'] += hashrate
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_TeamRedMiner exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_TeamRedMiner exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 def getMinerStatus_ZEnemyMiner(buf):
@@ -242,8 +245,8 @@ def getMinerStatus_ZEnemyMiner(buf):
 			minerstatus['totalhashrate'] += hashrate
 		return minerstatus
 	except Exception as e:
-		print("function getMinerStatus_ZEnemyMiner exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_ZEnemyMiner exception. msg: " + str(e))
+		logging.exception(e)
 	return None
 
 def getMinerResultDict_url(url):
@@ -252,8 +255,9 @@ def getMinerResultDict_url(url):
 		with request.urlopen(req) as f:
 			return json.loads(f.read().decode('utf-8'))
 	except Exception as e:
-		print("function getMinerResultDict_url exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerResultDict_url exception. msg: " + str(e))
+		logging.exception(e)
+	return None
 
 def getMinerStatus_url(apicfg):
 	try:
@@ -295,10 +299,10 @@ def getMinerStatus_url(apicfg):
 			elif apimode == 30:
 				status = getMinerStatus_xmrigminer(msdict)
 			return status
-		return None
 	except Exception as e:
-		print("function getMinerStatus_url exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_url exception. msg: " + str(e))
+		logging.exception(e)
+	return None
 
 def getMinerResult_tcp(url):
 	try:
@@ -312,8 +316,9 @@ def getMinerResult_tcp(url):
 		sock.close()
 		return buf
 	except Exception as e:
-		print("function getMinerResultDict_tcp exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerResultDict_tcp exception. msg: " + str(e))
+		logging.exception(e)
+	return None
 
 def getMinerStatus_tcp(apicfg):
 	try:
@@ -332,10 +337,10 @@ def getMinerStatus_tcp(apicfg):
 				msdict = json.loads(buf)
 				status = getMinerStatus_claymoreminer(msdict)
 			return status
-		return None
 	except Exception as e:
-		print("function getMinerStatus_tcp exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus_tcp exception. msg: " + str(e))
+		logging.exception(e)
+	return None
 
 def getMinerStatus(apicfg):
 	try:
@@ -345,10 +350,10 @@ def getMinerStatus(apicfg):
 			return getMinerStatus_tcp(apicfg)
 		else:
 			return getMinerStatus_url(apicfg)
-		return None
 	except Exception as e:
-		print("function getMinerStatus exception. msg: " + str(e))
-		return None
+		logging.error("function getMinerStatus exception. msg: " + str(e))
+		logging.exception(e)
+	return None
 
 if __name__ == '__main__':
     pass
