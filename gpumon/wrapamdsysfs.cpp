@@ -10,7 +10,7 @@
 #if defined(__linux)
 #include <dirent.h>
 #endif
-#include <filesystem>
+#include <experimental/filesystem>
 #include <boost/algorithm/string.hpp>
 //#include <boost/filesystem.hpp>
 
@@ -47,13 +47,13 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
     wrap_amdsysfs_handle* sysfsh = nullptr;
 
 #if defined(__linux)
-   // using fs = std::filesystem;
+    namespace fs = std::experimental::filesystem;
     std::vector<pciInfo> devices;  // Used to collect devices
 
     char dbuf[120];
     // Check directory exist
-    std::filesystem::path drm_dir("/sys/class/drm");
-    if (!std::filesystem::exists(drm_dir) || !std::filesystem::is_directory(drm_dir))
+    fs::path drm_dir("/sys/class/drm");
+    if (!fs::exists(drm_dir) || !fs::is_directory(drm_dir))
         return nullptr;
 
     // Regex patterns to identify directory elements
@@ -61,10 +61,10 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
     std::regex hwmonPattern("^hwmon[0-9]{1,}$");
 
     // Loop directory contents
-    for (std::filesystem::directory_iterator dirEnt(drm_dir); dirEnt != std::filesystem::directory_iterator(); ++dirEnt)
+    for (fs::directory_iterator dirEnt(drm_dir); dirEnt != fs::directory_iterator(); ++dirEnt)
     {
         // Skip non relevant entries
-        if (!std::filesystem::is_directory(dirEnt->path()) ||
+        if (!fs::is_directory(dirEnt->path()) ||
             !std::regex_match(dirEnt->path().filename().string(), cardPattern))
             continue;
 
@@ -74,23 +74,23 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
         unsigned int hwmonIndex = UINT_MAX;
 
         // Get AMD cards only (vendor 4098)
-        std::filesystem::path vendor_file("/sys/class/drm/" + devName + "/device/vendor");
+        fs::path vendor_file("/sys/class/drm/" + devName + "/device/vendor");
         snprintf(dbuf, 120, "/sys/class/drm/%s/device/vendor", devName.c_str());
-        if (!std::filesystem::exists(vendor_file) || !std::filesystem::is_regular_file(vendor_file) ||
+        if (!fs::exists(vendor_file) || !fs::is_regular_file(vendor_file) ||
             !getFileContentValue(dbuf, vendorId) || vendorId != 4098)
             continue;
 
         // Check it has dependant hwmon directory
-        std::filesystem::path hwmon_dir("/sys/class/drm/" + devName + "/device/hwmon");
-        if (!std::filesystem::exists(hwmon_dir) || !std::filesystem::is_directory(hwmon_dir))
+        fs::path hwmon_dir("/sys/class/drm/" + devName + "/device/hwmon");
+        if (!fs::exists(hwmon_dir) || !fs::is_directory(hwmon_dir))
             continue;
 
         // Loop subelements in hwmon directory
-        for (std::filesystem::directory_iterator hwmonEnt(hwmon_dir); hwmonEnt != std::filesystem::directory_iterator();
+        for (fs::directory_iterator hwmonEnt(hwmon_dir); hwmonEnt != fs::directory_iterator();
              ++hwmonEnt)
         {
             // Skip non relevant entries
-            if (!std::filesystem::is_directory(hwmonEnt->path()) ||
+            if (!fs::is_directory(hwmonEnt->path()) ||
                 !std::regex_match(hwmonEnt->path().filename().string(), hwmonPattern))
                 continue;
 
@@ -101,8 +101,8 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
             continue;
 
         // Detect Pci Id
-        std::filesystem::path uevent_file("/sys/class/drm/" + devName + "/device/uevent");
-        if (!std::filesystem::exists(uevent_file) || !std::filesystem::is_regular_file(uevent_file))
+        fs::path uevent_file("/sys/class/drm/" + devName + "/device/uevent");
+        if (!fs::exists(uevent_file) || !fs::is_regular_file(uevent_file))
             continue;
 
         snprintf(dbuf, 120, "/sys/class/drm/card%d/device/uevent", devIndex);
