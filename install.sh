@@ -25,12 +25,13 @@ echo ""
 echo "Files copying..."
 echo ""
 cp -f /home/lsminer/lsminer/etc/minerscreen.desktop /home/lsminer/.config/autostart/minerscreen.desktop
-cp -f /home/lsminer/lsminer/etc/wallpaper.jpg /home/lsminer/wallpaper.jpg
+#cp -f /home/lsminer/lsminer/etc/wallpaper.jpg /home/lsminer/wallpaper.jpg
 sudo cp -f /home/lsminer/lsminer/etc/prepare.service /etc/systemd/system/prepare.service
 sudo cp -f /home/lsminer/lsminer/etc/miner.service /etc/systemd/system/miner.service
 sudo cp -f /home/lsminer/lsminer/etc/redline.service /etc/systemd/system/redline.service
 sudo cp -f /home/lsminer/lsminer/etc/teleconsole.service /etc/systemd/system/teleconsole.service
 sudo cp -f /home/lsminer/lsminer/etc/screenrc /etc/screenrc
+sudo cp -f /home/lsminer/lsminer/etc/lsminer.conf /home/lsminer.conf
 sync
 sleep 1
 
