@@ -87,6 +87,7 @@ def checkLocalUpdate():
             stopService()
             with tarfile.open(filepath) as tar:
                 tar.extractall('./')
+            subprocess.run('mv ./update.tar.gz ./update.tar.gz.bak', shell=True)
             startService()
 
     except Exception as e:
