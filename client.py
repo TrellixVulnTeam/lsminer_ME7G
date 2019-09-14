@@ -473,6 +473,7 @@ class lsminerClient(object):
         while True:
             try:
                 if not os.path.exists(filepath):
+                    logging.warning('can not find teleconsole.id file. sleep 10 seconds and try again.')
                     time.sleep(10)
                     continue
                 time.sleep(2)
