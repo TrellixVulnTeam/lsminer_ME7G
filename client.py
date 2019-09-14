@@ -62,6 +62,7 @@ class lsminerClient(object):
         
     def connectSrv(self):
         try:
+            logging.info('lsminerClient start connecting server: '+ str(self.cfg['ip'])+':'+ str(self.cfg['port']))
             self.sock = socket.create_connection((self.cfg['ip'], self.cfg['port']), 3)
             self.sock.setblocking(True)
             self.sock.settimeout(None)
@@ -102,6 +103,8 @@ class lsminerClient(object):
             reqData['os'] = self.cfg['os']
             reqjson = json.dumps(reqData)
             reqjson += '\r\n'
+            logging.info('lsminerClient send login request.')
+            logging.info(reqjson)
             self.sock.sendall(reqjson.encode("utf-8"))
         except Exception as e:
             logging.error('sendLoginReq exception. msg: ' + str(e))
@@ -115,6 +118,8 @@ class lsminerClient(object):
             reqData['os'] = self.cfg['os']
             reqjson = json.dumps(reqData)
             reqjson += '\r\n'
+            logging.info('lsminerClient send get miner args.')
+            logging.info(reqjson)
             self.sock.sendall(reqjson.encode("utf-8"))
         except Exception as e:
             logging.error('sendGetMinerArgsReq exception. msg: ' + str(e))
@@ -128,6 +133,8 @@ class lsminerClient(object):
             reqData['os'] = self.cfg['os']
             reqjson = json.dumps(reqData)
             reqjson += '\r\n'
+            logging.info('lsminerClient send logout request.')
+            logging.info(reqjson)
             self.sock.sendall(reqjson.encode("utf-8"))
         except Exception as e:
             logging.error('sendLogoutReq exception. msg: ' + str(e))
@@ -142,6 +149,8 @@ class lsminerClient(object):
             reqData['os'] = self.cfg['os']
             reqjson = json.dumps(reqData)
             reqjson += '\r\n'
+            logging.info('lsminerClient send console request.')
+            logging.info(reqjson)
             self.sock.sendall(reqjson.encode("utf-8"))
         except Exception as e:
             logging.error('sendConsoleIdReq exception. msg: ' + str(e))
@@ -149,12 +158,14 @@ class lsminerClient(object):
             return None
 
     def onWelcome(self, msg):
-        logging.info('connect server ok. recv server msg: ' + msg['message'])
+        logging.info('recv server connecting msg: ' + str(msg))
+        logging.info('connect server ok.')
         thread = threading.Thread(target=lsminerClient.teleconsoleProc, args=(self,))
         thread.start()
         q.put(2)
 
     def onLoginResp(self, msg):
+        logging.info('recv server login msg: ' + str(msg))
         if 'result' in msg and msg['result']:
             logging.info('login ok.')
             q.put(3)
@@ -209,7 +220,7 @@ class lsminerClient(object):
                 time.sleep(30)
                 mcfg = self.minerargs
                 reqData = self.getReportData(mcfg)
-                logging.info(' send miner report....')
+                logging.info('lsminerClient send miner report data.')
                 logging.info(reqData)
                 self.sock.sendall(reqData.encode('utf-8'))
             except Exception as e:
@@ -279,9 +290,9 @@ class lsminerClient(object):
     
     def onGetMinerArgs(self, msg):
         try:
+            logging.info('recv server get miner args msg: ' + str(msg))
             if 'result' in msg and msg['result']:
                 logging.info('get miner args ok.')
-                logging.info(msg)
 
                 self.minerargs = msg
                 
@@ -359,14 +370,14 @@ class lsminerClient(object):
             logging.exception(e)
 
     def onReportResp(self, msg):
-        pass
+        logging.info('recv server report msg: ' + str(msg))
 
     def onUpdateMinerArgs(self, msg):
-        logging.info('recv update miner args commond.')
+        logging.info('recv server update miner args msg: ' + str(msg))
         q.put(3)
 
     def onClientUpdate(self, msg):
-        logging.info('client recv update msg! exit and update now.')
+        logging.info('recv server client update msg: ' + str(msg))
         #kill miner process, exit client.py
         if self.minerpath:
             self.killAllMiners(self.minerpath[1:])
@@ -375,6 +386,7 @@ class lsminerClient(object):
         sys.exit(123)
 
     def onGetConsoleId(self, msg):
+        logging.info('recv server get console msg: ' + str(msg))
         subprocess.run('systemctl restart console', shell=True)
         thread = threading.Thread(target=lsminerClient.teleconsoleProc, args=(self,))
         thread.start()
@@ -429,8 +441,12 @@ class lsminerClient(object):
 
                 buffer += self.sock.recv(4096).decode()
                 if '\n' in buffer:
-                    msg = json.loads(buffer)
-                    self.processMsg(msg)
+                    if '{' in buffer and '}' in buffer:
+                        msg = json.loads(buffer)
+                        self.processMsg(msg)
+                    else:
+                        logging.warning('lsminerClient recv unknown format data.')
+                        logging.warning(buffer)
                     buffer = ''
         except Exception as e:
             logging.info('recvThread exception. msg: ' + str(e))
@@ -462,7 +478,7 @@ class lsminerClient(object):
                 time.sleep(2)
                 with open(filepath, "r", encoding="utf-8") as fs:
                     self.consoleurl = fs.readline()
-                    logging.info("get consoleurl: " + str(self.consoleurl))
+                    logging.info("teleconsoleurl: " + str(self.consoleurl))
                 q.put(16)
                 break
             except Exception as e:
