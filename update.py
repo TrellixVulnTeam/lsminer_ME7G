@@ -43,16 +43,16 @@ def checkClientUpdate(ver, url):
             resdict = json.loads(f.read().decode('utf-8'))
 
         if resdict['result']:
-            filepath = './update.tar.gz'
+            filepath = '/home/lsminer/lsminer/' + resdict['appname']
             while True:
                 if downloadFile(resdict['appurl'], filepath):
                     if getFileMd5(filepath) == resdict['appmd5']:
                         logging.info('file download ok.')
                         stopService()
                         with tarfile.open(filepath) as tar:
-                            tar.extractall('./')
+                            tar.extractall('/home/lsminer/lsminer/')
                         startService()
-                        subprocess.run('mv ./update.tar.gz ./update.tar.gz.bak', shell=True)
+                        #subprocess.run('mv ./update.tar.gz ./update.tar.gz.bak', shell=True)
                         return True
                     else:
                         logging.warning("lsminer client package md5 hash wrong. sleep 3 seconds and try later.")
@@ -66,20 +66,6 @@ def checkClientUpdate(ver, url):
         logging.error("function reportThread exception. msg: " + str(e))
         logging.exception(e)
     return False
-
-def checkLocalUpdate():
-    try:
-        filepath = './update.tar.gz'
-        if os.path.exists(filepath):
-            stopService()
-            with tarfile.open(filepath) as tar:
-                tar.extractall('./')
-            subprocess.run('mv ./update.tar.gz ./update.tar.gz.bak', shell=True)
-            startService()
-
-    except Exception as e:
-        logging.error("function checkLocalUpdate exception. msg: " + str(e))
-        logging.exception(e)
 
 if __name__ == '__main__':
     try:
