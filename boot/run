@@ -26,7 +26,7 @@ function intro()
 	RESETCOLOR='\033[0m'
 
 	echo -e "${DARKGRAY}------------------------------------------------------------------------------${RESETCOLOR}\n\n"
-	echo "\n\n"
+
 	text cyan "$LOGO\n"
 	text cyan "		     Linux Mining Operating System\n\n\n"
 
