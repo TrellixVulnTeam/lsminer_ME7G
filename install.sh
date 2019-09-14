@@ -35,6 +35,8 @@ sudo cp -f /home/lsminer/lsminer/etc/lsminer.conf /home/lsminer.conf
 sync
 sleep 1
 
+sudo systemctl daemon-reload
+
 echo "Activating services..."
 echo ""
 [ -f /etc/systemd/system/prepare.service ] && echo "Service loaded: prepare" && systemctl enable prepare
