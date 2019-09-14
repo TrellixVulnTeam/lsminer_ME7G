@@ -30,33 +30,28 @@ function start()
 
 	screen -dm -S console -t console -L bash -c "/home/lsminer/lsminer/teleconsole"
 
-	sleep 10
-
-	TELELOG=$(cat /home/lsminer/screen_console.log | grep -m1 "WebUI for this session: ")
-
-	if [[ ! -z $TELELOG ]]; then
-		
-		TELELOG=$(sed "s,$(printf '\033')\\[[0-9;]*[a-zA-Z],,g" <<< "$TELELOG")
-		TELECONSOLE_ID=$(awk '{print $NF}' <<< "$TELELOG")
-		echo "Teleconsole ID generated: $TELECONSOLE_ID"
-		echo $TELECONSOLE_ID | tee /home/lsminer/teleconsole.id
-		wait && sync && sleep 1
-		echo "Write!"
-
-	else 
-
-		sleep 10
-
+	while true; do
+		sleep 2
 		TELELOG=$(cat /home/lsminer/screen_console.log | grep -m1 "WebUI for this session: ")
 
-		TELELOG=$(sed "s,$(printf '\033')\\[[0-9;]*[a-zA-Z],,g" <<< "$TELELOG")
-		TELECONSOLE_ID=$(awk '{print $NF}' <<< "$TELELOG")
-		echo "Teleconsole ID generated: $TELECONSOLE_ID"
-		echo $TELECONSOLE_ID | tee /home/lsminer/teleconsole.id
-		wait && sync && sleep 1
-		echo "Write!"
+		if [[ ! -z $TELELOG ]]; then
+			
+			TELELOG=$(sed "s,$(printf '\033')\\[[0-9;]*[a-zA-Z],,g" <<< "$TELELOG")
+			TELECONSOLE_ID=$(awk '{print $NF}' <<< "$TELELOG")
 
-	fi
+			if [[ ! -z $TELECONSOLE_ID ]]; then
+				echo "Teleconsole ID generated: $TELECONSOLE_ID"
+				echo $TELECONSOLE_ID | tee /home/lsminer/teleconsole.id
+				wait && sync && sleep 1
+				TELEID=$(cat /home/lsminer/teleconsole.id | grep -m1 "http")
+				if [[ ! -z $TELEID ]]; then
+					echo "Write!"
+					break
+				fi
+			fi
+			
+		fi
+	done
 
 }
 
