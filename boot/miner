@@ -36,9 +36,10 @@ function stop()
 		for pid in $screens; do
 			echo "Stopping screen session: $pid.lsminer"
 			screen -S $pid -X quit
-			sudo rm -rf /home/lsminer/screen_lsminer.log
 		done
 	fi
+
+	sudo rm -rf /home/lsminer/screen_lsminer.log
 }
 
 

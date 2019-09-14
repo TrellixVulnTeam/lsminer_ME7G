@@ -36,9 +36,10 @@ function stop()
 		for pid in $screens; do
 			echo "Stopping screen session: $pid.redline"
 			screen -S $pid -X quit
-			sudo rm -rf /home/lsminer/screen_redline.log
 		done
 	fi
+
+	sudo rm -rf /home/lsminer/screen_redline.log
 }
 
 
