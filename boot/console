@@ -20,13 +20,8 @@ function start()
 
 	echo "console Starting..."
 
-	if [ -f "/home/lsminer/screen_console.log" ]; then
-	 	sudo rm -rf /home/lsminer/screen_console.log
-	fi
-
-	if [ -f "/home/lsminer/teleconsole.id" ]; then
-	 	sudo rm -rf /home/lsminer/teleconsole.id
-	fi
+	sudo rm -rf /home/lsminer/screen_console.log
+	sudo rm -rf /home/lsminer/teleconsole.id
 
 	screen -dm -S console -t console -L bash -c "/home/lsminer/lsminer/teleconsole"
 

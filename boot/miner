@@ -14,12 +14,10 @@ function usage()
 
 function start()
 {
-	if [ -f "/home/lsminer/screen_lsminer.log" ]; then
-	 	sudo rm -rf /home/lsminer/screen_redline.log
-	fi
-
 	SCREEN=$(screen -ls lsminer | grep lsminer | wc -l)
 	[ "$SCREEN" -gt 1 ] && echo "Miner already running..." && exit
+
+	sudo rm -rf /home/lsminer/screen_lsminer.log
 
 	echo "Miner Starting..."
 	screen -dm -S lsminer -t lsminer -L bash -c "/home/lsminer/lsminer/boot/run"
