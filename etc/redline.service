@@ -3,7 +3,7 @@ Description=Lsminer Reboot Service
 After=lightdm.service
 
 [Service]
-User=lsminer
+User=root
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/home/lsminer/lsminer/boot/redline start
