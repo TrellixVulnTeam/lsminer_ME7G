@@ -217,12 +217,20 @@ class lsminerClient(object):
     def reportThread(self):
         while True:
             try:
-                time.sleep(30)
+                time.sleep(20)
                 mcfg = self.minerargs
                 reqData = self.getReportData(mcfg)
+                while not reqData:
+                    logging.warning('getReportData failed. sleep 3 seconds and try again.')
+                    time.sleep(3)
+                    reqData = self.getReportData(mcfg)
+
                 logging.info('lsminerClient send miner report data.')
                 logging.info(reqData)
-                self.sock.sendall(reqData.encode('utf-8'))
+                if self.sock:
+                    self.sock.sendall(reqData.encode('utf-8'))
+                else:
+                    logging.warning('socket unusable.')
             except Exception as e:
                 logging.error("function reportThread exception. msg: " + str(e))
                 logging.exception(e)
@@ -439,7 +447,14 @@ class lsminerClient(object):
                     time.sleep(1)
                     continue
 
-                buffer += self.sock.recv(4096).decode()
+                data = self.sock.recv(4096)
+                if not data:
+                    logging.warning('server close socket. try to reconnect.')
+                    self.sock = None
+                    q.put(1)
+                    continue
+
+                buffer += data.decode()
                 if '\n' in buffer:
                     if '{' in buffer and '}' in buffer:
                         msg = json.loads(buffer)
