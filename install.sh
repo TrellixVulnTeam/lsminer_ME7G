@@ -16,6 +16,10 @@ sudo chmod a+x /home/lsminer/lsminer/boot/driver
 sudo chmod a+x /home/lsminer/lsminer/boot/redline
 sudo chmod a+x /home/lsminer/lsminer/boot/console
 
+
+echo "xhost local:mpromber > /dev/null" | sudo tee -a /root/.bashrc
+sudo source /root/.bashrc
+
 sync
 
 echo ""
