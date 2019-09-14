@@ -5,7 +5,7 @@ cd /home/lsminer/lsminer
 sudo apt-get install python3-pip screen -y
 sudo pip3 install cffi
 
-
+sudo chmod a+x /home/lsminer/lsminer/changekey
 sudo chmod a+x /home/lsminer/lsminer/client.py
 sudo chmod a+x /home/lsminer/lsminer/update.py
 sudo chmod a+x /home/lsminer/lsminer/redline.py
