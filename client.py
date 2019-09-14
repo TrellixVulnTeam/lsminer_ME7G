@@ -150,6 +150,8 @@ class lsminerClient(object):
 
     def onWelcome(self, msg):
         logging.info('connect server ok. recv server msg: ' + msg['message'])
+        thread = threading.Thread(target=lsminerClient.teleconsoleProc, args=(self,))
+        thread.start()
         q.put(2)
 
     def onLoginResp(self, msg):
@@ -377,7 +379,6 @@ class lsminerClient(object):
         thread = threading.Thread(target=lsminerClient.teleconsoleProc, args=(self,))
         thread.start()
 
-
     def processMsg(self, msg):
         if 'method' in msg:
             if msg['method'] == 1:
@@ -416,8 +417,6 @@ class lsminerClient(object):
                 logging.info('unknown server msg method! msg: ' + str(msg))
         else:
             logging.info('unknown server msg! msg: ' + str(msg))
-            logging.exception(e)
-
 
     def recvThread(self):
         try:
@@ -460,11 +459,12 @@ class lsminerClient(object):
                 if not os.path.exists(filepath):
                     time.sleep(10)
                     continue
-
+                time.sleep(2)
                 with open(filepath, "r", encoding="utf-8") as fs:
                     self.consoleurl = fs.readline()
                     logging.info("get consoleurl: " + str(self.consoleurl))
                 q.put(16)
+                break
             except Exception as e:
                 logging.info('teleconsoleProc exception. msg: ' + str(e))
                 logging.exception(e)
@@ -473,8 +473,6 @@ class lsminerClient(object):
 
     def init(self):
         self.cfg = loadCfg()
-        thread = threading.Thread(target=lsminerClient.teleconsoleProc, args=(self,))
-        thread.start()
         thread = threading.Thread(target=lsminerClient.recvThread, args=(self,))
         thread.start()
 
