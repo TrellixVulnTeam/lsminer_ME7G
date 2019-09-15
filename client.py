@@ -439,9 +439,9 @@ class lsminerClient(object):
             logging.info('unknown server msg! msg: ' + str(msg))
 
     def recvThread(self):
-        try:
-            buffer = ''
-            while True:
+        while True:
+            try:
+                buffer = ''
                 if self.sock == None:
                     logging.info('client socket == None. sleep 1 second.')
                     time.sleep(1)
@@ -456,17 +456,17 @@ class lsminerClient(object):
 
                 buffer += data.decode()
                 if '\n' in buffer:
-                    if '{' in buffer and '}' in buffer:
+                    if '{' == buffer[0] and '}' == buffer[len(buffer)-2]:
                         msg = json.loads(buffer)
                         self.processMsg(msg)
                     else:
                         logging.warning('lsminerClient recv unknown format data.')
                         logging.warning(buffer)
                     buffer = ''
-        except Exception as e:
-            logging.info('recvThread exception. msg: ' + str(e))
-            logging.exception(e)
-            time.sleep(1)
+            except Exception as e:
+                logging.info('recvThread exception. msg: ' + str(e))
+                logging.exception(e)
+                time.sleep(1)
 
     '''cmd list: 1 == connect server, 2 == login server, 3 == get miner config'''
     def processCmd(self, cmd):
