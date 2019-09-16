@@ -5,6 +5,7 @@ import uuid
 import json
 import os
 import logging
+from urllib.parse import urlparse
 
 logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt = '%Y-%m-%d  %H:%M:%S %a')
 
@@ -249,11 +250,27 @@ def getMinerStatus_ZEnemyMiner(buf):
 		logging.exception(e)
 	return None
 
+def checkMinerApiPort(port):
+	try:
+		lines = os.popen('netstat -lnt').read().splitlines(False)
+		for line in lines:
+			if str(port) in line:
+				return True
+	except Exception as e:
+		logging.error("function checkMinerApiPort exception. msg: " + str(e))
+		logging.exception(e)
+	return False
+
 def getMinerResultDict_url(url):
 	try:
-		req = request.Request(url)
-		with request.urlopen(req) as f:
-			return json.loads(f.read().decode('utf-8'))
+		_url = urlparse(url)
+		if checkMinerApiPort(_url.port):
+			req = request.Request(url)
+			with request.urlopen(req) as f:
+				return json.loads(f.read().decode('utf-8'))
+		else:
+			logging.error('miner url api port unready.')
+		
 	except Exception as e:
 		logging.error("function getMinerResultDict_url exception. msg: " + str(e))
 		logging.exception(e)
@@ -308,13 +325,17 @@ def getMinerResult_tcp(url):
 	try:
 		cmd = url.split('|')[0] +'\r\n'
 		port = url.split('|')[1]
-		sock = socket.create_connection(('127.0.0.1', port), 3)
-		sock.setblocking(True)
-		sock.settimeout(None)
-		sock.sendall(cmd.encode())
-		buf = sock.recv(10240).decode()
-		sock.close()
-		return buf
+		if checkMinerApiPort(port):
+			sock = socket.create_connection(('127.0.0.1', port), 3)
+			sock.setblocking(True)
+			sock.settimeout(None)
+			sock.sendall(cmd.encode())
+			buf = sock.recv(10240).decode()
+			sock.close()
+			return buf
+		else:
+			logging.error('miner tcp api port unready.')
+		
 	except Exception as e:
 		logging.error("function getMinerResultDict_tcp exception. msg: " + str(e))
 		logging.exception(e)

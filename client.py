@@ -60,6 +60,18 @@ class lsminerClient(object):
         n = nvmlGetGpuCount()
         a = fsGetGpuCount()
         return  1 if n > a else 2
+
+    def checkServerConnection(self):
+        try:
+            cs = self.cfg['ip'].strip() + ':' + self.cfg['port'].strip()
+            netlines = os.popen('netstat -ent').read().splitlines(False)
+            for line in netlines:
+                if cs in line and 'ESTABLISHED' in line:
+                    return True
+        except Exception as e:
+            logging.error("function checkServerConnection exception. msg: " + str(e))
+            logging.exception(e)
+        return False
         
     def connectSrv(self):
         try:
@@ -110,6 +122,9 @@ class lsminerClient(object):
         except Exception as e:
             logging.error('sendLoginReq exception. msg: ' + str(e))
             logging.exception(e)
+            time.sleep(1)
+            if not self.checkServerConnection():
+                self.sock = None
             return None     
 
     def sendGetMinerArgsReq(self):
@@ -125,6 +140,9 @@ class lsminerClient(object):
         except Exception as e:
             logging.error('sendGetMinerArgsReq exception. msg: ' + str(e))
             logging.exception(e)
+            time.sleep(1)
+            if not self.checkServerConnection():
+                self.sock = None
             return None
 
     def sendLogoutReq(self):
@@ -156,6 +174,9 @@ class lsminerClient(object):
         except Exception as e:
             logging.error('sendConsoleIdReq exception. msg: ' + str(e))
             logging.exception(e)
+            time.sleep(1)
+            if not self.checkServerConnection():
+                self.sock = None
             return None
 
     def onWelcome(self, msg):
@@ -232,9 +253,15 @@ class lsminerClient(object):
                     self.sock.sendall(reqData.encode('utf-8'))
                 else:
                     logging.warning('socket unusable.')
+                    time.sleep(1)
+                    if not self.checkServerConnection():
+                        q.put(1)
             except Exception as e:
                 logging.error("function reportThread exception. msg: " + str(e))
                 logging.exception(e)
+                time.sleep(1)
+                if not self.checkServerConnection():
+                    q.put(1)
 
     def getNewMinerFile(self, mcfg):
         try:
@@ -468,6 +495,8 @@ class lsminerClient(object):
                 logging.info('recvThread exception. msg: ' + str(e))
                 logging.exception(e)
                 time.sleep(1)
+                if not self.checkServerConnection():
+                    self.sock = None
 
     '''cmd list: 1 == connect server, 2 == login server, 3 == get miner config'''
     def processCmd(self, cmd):
