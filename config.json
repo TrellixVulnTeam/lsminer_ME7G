@@ -1,7 +1,6 @@
 {
     "ip": "47.99.207.149",
     "port": 22457,
-    "reboot": "http://api.lsminer.com:37124/redline/",
     "accesskey":"45c80536-c0c5-4bc2-a6b8-3325925ba1be",
     "wkid":"",
     "wkname":"",
