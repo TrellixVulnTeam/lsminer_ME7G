@@ -549,12 +549,12 @@ class lsminerClient(object):
     def ttyshareProc(self):
         filepath = "/home/lsminer/ttyshare.id"
 
+        subprocess.run('sudo systemctl stop ttyshare', shell=True)
+        time.sleep(1)
+        subprocess.run('sudo systemctl start ttyshare', shell=True)
+
         if not self.ttyservicestarting:
             self.ttyservicestarting = 1
-            subprocess.run('sudo systemctl stop ttyshare', shell=True)
-            time.sleep(1)
-            subprocess.run('sudo systemctl start ttyshare', shell=True)
-
             while True:
                 try:
                     if not os.path.exists(filepath):
