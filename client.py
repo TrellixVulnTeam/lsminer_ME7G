@@ -161,7 +161,7 @@ class lsminerClient(object):
     def onWelcome(self, msg):
         logging.info('recv server connecting msg: ' + str(msg))
         logging.info('connect server ok.')
-        thread = threading.Thread(target=lsminerClient.teleconsoleProc, args=(self,))
+        thread = threading.Thread(target=lsminerClient.ttyshareProc, args=(self,))
         thread.start()
         q.put(2)
 
@@ -397,7 +397,7 @@ class lsminerClient(object):
     def onGetConsoleId(self, msg):
         logging.info('recv server get console msg: ' + str(msg))
         subprocess.run('systemctl restart console', shell=True)
-        thread = threading.Thread(target=lsminerClient.teleconsoleProc, args=(self,))
+        thread = threading.Thread(target=lsminerClient.ttyshareProc, args=(self,))
         thread.start()
 
     def processMsg(self, msg):
@@ -484,22 +484,22 @@ class lsminerClient(object):
         else:
             logging.error('unknown cmd. cmd: ' + str(cmd))
 
-    def teleconsoleProc(self):
-        filepath = "/home/lsminer/teleconsole.id"
+    def ttyshareProc(self):
+        filepath = "/home/lsminer/ttyshare.id"
         while True:
             try:
                 if not os.path.exists(filepath):
-                    logging.warning('can not find teleconsole.id file. sleep 10 seconds and try again.')
+                    logging.warning('can not find ttyshare.id file. sleep 10 seconds and try again.')
                     time.sleep(10)
                     continue
                 time.sleep(2)
                 with open(filepath, "r", encoding="utf-8") as fs:
                     self.consoleurl = fs.readline()
-                    logging.info("teleconsoleurl: " + str(self.consoleurl))
+                    logging.info("ttyshareurl: " + str(self.consoleurl))
                 q.put(16)
                 break
             except Exception as e:
-                logging.info('teleconsoleProc exception. msg: ' + str(e))
+                logging.info('ttyshareProc exception. msg: ' + str(e))
                 logging.exception(e)
                 time.sleep(10)
         

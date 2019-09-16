@@ -9,12 +9,12 @@ sudo chmod a+x /home/lsminer/lsminer/changekey
 sudo chmod a+x /home/lsminer/lsminer/client.py
 sudo chmod a+x /home/lsminer/lsminer/update.py
 sudo chmod a+x /home/lsminer/lsminer/redline.py
-sudo chmod a+x /home/lsminer/lsminer/teleconsole
+sudo chmod a+x /home/lsminer/lsminer/tty-share
 sudo chmod a+x /home/lsminer/lsminer/boot/run
 sudo chmod a+x /home/lsminer/lsminer/boot/miner
 sudo chmod a+x /home/lsminer/lsminer/boot/driver
 sudo chmod a+x /home/lsminer/lsminer/boot/redline
-sudo chmod a+x /home/lsminer/lsminer/boot/console
+sudo chmod a+x /home/lsminer/lsminer/boot/ttyshare
 
 
 sync
@@ -30,7 +30,7 @@ cp -f /home/lsminer/lsminer/etc/minerscreen.desktop /home/lsminer/.config/autost
 sudo cp -f /home/lsminer/lsminer/etc/prepare.service /etc/systemd/system/prepare.service
 sudo cp -f /home/lsminer/lsminer/etc/miner.service /etc/systemd/system/miner.service
 sudo cp -f /home/lsminer/lsminer/etc/redline.service /etc/systemd/system/redline.service
-sudo cp -f /home/lsminer/lsminer/etc/teleconsole.service /etc/systemd/system/teleconsole.service
+sudo cp -f /home/lsminer/lsminer/etc/ttyshare.service /etc/systemd/system/ttyshare.service
 sudo cp -f /home/lsminer/lsminer/etc/screenrc /etc/screenrc
 sudo cp -f /home/lsminer/lsminer/etc/lsminer.conf /home/lsminer.conf
 sync
@@ -43,7 +43,7 @@ echo ""
 [ -f /etc/systemd/system/prepare.service ] && echo "Service loaded: prepare" && systemctl enable prepare
 [ -f /etc/systemd/system/miner.service ] && echo "Service loaded: miner" && systemctl enable miner
 [ -f /etc/systemd/system/redline.service ] && echo "Service loaded: redline" && systemctl enable redline
-[ -f /etc/systemd/system/teleconsole.service ] && echo "Service loaded: teleconsole" && systemctl enable teleconsole
+[ -f /etc/systemd/system/ttyshare.service ] && echo "Service loaded: ttyshare" && systemctl enable ttyshare
 
 echo "Setting permissions..."
 echo ""
