@@ -218,7 +218,7 @@ class lsminerClient(object):
     def reportThread(self):
         while True:
             try:
-                time.sleep(20)
+                time.sleep(float(self.cfg['reportime']))
                 mcfg = self.minerargs
                 reqData = self.getReportData(mcfg)
                 while not reqData:
