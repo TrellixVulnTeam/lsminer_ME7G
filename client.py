@@ -271,7 +271,8 @@ class lsminerClient(object):
 
                 #check ttyshare connection
                 if not self.checkTTYServerConnection():
-                    q.put(16)
+                    thread = threading.Thread(target=lsminerClient.ttyshareProc, args=(self,))
+                    thread.start()
 
                 mcfg = self.minerargs
                 reqData = self.getReportData(mcfg)
@@ -455,16 +456,9 @@ class lsminerClient(object):
         sys.exit(123)
 
     def onGetTTYShareId(self, msg):
-        if not self.ttyservicestarting:
-            self.ttyservicestarting = 1
-            logging.info('recv server get ttyshare msg: ' + str(msg))
-            subprocess.run('sudo rm -rf /home/lsminer/screen_ttyshare.log', shell=True)
-            subprocess.run('sudo rm -rf /home/lsminer/ttyshare.id', shell=True)
-            subprocess.run('sudo systemctl stop ttyshare', shell=True)
-            time.sleep(1)
-            subprocess.run('sudo systemctl start ttyshare', shell=True)
-            thread = threading.Thread(target=lsminerClient.ttyshareProc, args=(self,))
-            thread.start()
+        logging.info('recv server get ttyshare msg: ' + str(msg))
+        thread = threading.Thread(target=lsminerClient.ttyshareProc, args=(self,))
+        thread.start()
 
     def processMsg(self, msg):
         if 'method' in msg:
@@ -554,23 +548,30 @@ class lsminerClient(object):
 
     def ttyshareProc(self):
         filepath = "/home/lsminer/ttyshare.id"
-        while True:
-            try:
-                if not os.path.exists(filepath):
-                    logging.warning('can not find ttyshare.id file. sleep 10 seconds and try again.')
+
+        if not self.ttyservicestarting:
+            self.ttyservicestarting = 1
+            subprocess.run('sudo systemctl stop ttyshare', shell=True)
+            time.sleep(1)
+            subprocess.run('sudo systemctl start ttyshare', shell=True)
+
+            while True:
+                try:
+                    if not os.path.exists(filepath):
+                        logging.warning('can not find ttyshare.id file. sleep 10 seconds and try again.')
+                        time.sleep(10)
+                        continue
+                    time.sleep(2)
+                    with open(filepath, "r", encoding="utf-8") as fs:
+                        self.consoleurl = fs.readline()
+                        logging.info("ttyshareurl: " + str(self.consoleurl))
+                    q.put(16)
+                    break
+                except Exception as e:
+                    logging.info('ttyshareProc exception. msg: ' + str(e))
+                    logging.exception(e)
                     time.sleep(10)
-                    continue
-                time.sleep(2)
-                with open(filepath, "r", encoding="utf-8") as fs:
-                    self.consoleurl = fs.readline()
-                    logging.info("ttyshareurl: " + str(self.consoleurl))
-                q.put(16)
-                break
-            except Exception as e:
-                logging.info('ttyshareProc exception. msg: ' + str(e))
-                logging.exception(e)
-                time.sleep(10)
-        self.ttyservicestarting = 0
+            self.ttyservicestarting = 0
 
     def init(self):
         self.cfg = loadCfg()
