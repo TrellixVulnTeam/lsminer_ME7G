@@ -75,7 +75,9 @@ if __name__ == '__main__':
         while True:
             if checkClientUpdate(appver, updateurl):
                 logging.info('client has been updated. lsminer client will restart later.')
-                subprocess.run('sudo systemctl restart miner', shell=True)
+                subprocess.run('sudo systemctl stop miner', shell=True)
+                time.sleep(1)
+                subprocess.run('sudo systemctl start miner', shell=True)
 
             process = subprocess.run('python3 /home/lsminer/lsminer/client.py', shell=True)
             if process.returncode == 123:

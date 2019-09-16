@@ -460,7 +460,9 @@ class lsminerClient(object):
             logging.info('recv server get ttyshare msg: ' + str(msg))
             subprocess.run('sudo rm -rf /home/lsminer/screen_ttyshare.log', shell=True)
             subprocess.run('sudo rm -rf /home/lsminer/ttyshare.id', shell=True)
-            subprocess.run('sudo systemctl restart ttyshare', shell=True)
+            subprocess.run('sudo systemctl stop ttyshare', shell=True)
+            time.sleep(1)
+            subprocess.run('sudo systemctl start ttyshare', shell=True)
             thread = threading.Thread(target=lsminerClient.ttyshareProc, args=(self,))
             thread.start()
 
