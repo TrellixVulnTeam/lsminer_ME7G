@@ -37,6 +37,7 @@ class lsminerClient(object):
         self.gpuType = self.checkGpuType()    #nvidia==1, amd==2
         self.minertime = datetime.now()
         self.consoleurl = ''
+        self.accesskey = getAccessKey()
 
     def __del__(self):
         pass
@@ -83,7 +84,7 @@ class lsminerClient(object):
             
             reqData = {}
             reqData['method'] = 1
-            reqData['accesskey'] = self.cfg['accesskey']
+            reqData['accesskey'] = self.accesskey
 
             if self.cfg['wkname']:
                 reqData['wkname'] = self.cfg['wkname']

@@ -69,8 +69,7 @@ def checkClientUpdate(ver, url):
 
 if __name__ == '__main__':
     try:
-        cfg = loadCfg()
-        updateurl = cfg['updateapi']
+        updateurl = 'http://lsminer.yunjisuan001.com:23335/appupdate_linux'
         appver = getClientVersion()
         
         while True:

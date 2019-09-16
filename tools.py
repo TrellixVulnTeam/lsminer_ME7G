@@ -10,18 +10,14 @@ import logging
 
 logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt = '%Y-%m-%d  %H:%M:%S %a')
 
-
 defaultConfig = {
     "ip": "47.99.207.149",
     "port": 22457,
-    "reboot": "http://api.lsminer.com:37124/redline/",
-    "accesskey":"",
     "wkid":"",
     "wkname":"",
     "driverver":"230",
     "os":2,
-    "reportime":30,
-    "updateapi":"http://lsminer.yunjisuan001.com:23335/appupdate_linux"
+    "reportime":30
 }
 
 def getMac():
@@ -74,9 +70,7 @@ def loadCfg():
         logging.exception(e)
     
     cfg.update(userCfg)
-    if not cfg['accesskey']:
-        cfg['accesskey'] = getAccessKey()
-        saveCfg(cfg)
+
     return cfg
     
 
