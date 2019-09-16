@@ -95,8 +95,7 @@ class lsminerClient(object):
                     ttyserver = line.split('--server ')[1].strip()
                     logging.info('find tty server string: ' + ttyserver)
                     return ttyserver
-                else:
-                    logging.warning('do not find tty server string.')
+            logging.warning('do not find tty server string.')
         except Exception as e:
             logging.error("function getTTYServerString exception. msg: " + str(e))
             logging.exception(e)
