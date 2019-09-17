@@ -89,12 +89,12 @@ class lsminerClient(object):
 
     def getTTYServerString(self):
         try:
-            text = open('./boot/ttyshare', 'r')
-            for line in text.readlines():
-                if '--server ' in line:
-                    ttyserver = line.split('--server ')[1].strip()
-                    logging.info('find tty server string: ' + ttyserver)
-                    return ttyserver
+            with open('./boot/ttyshare', 'r', encoding="utf-8") as text:
+                for line in text.readlines():
+                    if '--server ' in line:
+                        ttyserver = line.split('--server ')[1].strip()
+                        logging.info('find tty server string: ' + ttyserver)
+                        return ttyserver
             logging.warning('do not find tty server string.')
         except Exception as e:
             logging.error("function getTTYServerString exception. msg: " + str(e))
