@@ -549,9 +549,11 @@ class lsminerClient(object):
     def ttyshareProc(self):
         filepath = "/home/lsminer/ttyshare.id"
 
-        subprocess.run('sudo systemctl stop ttyshare', shell=True)
-        time.sleep(1)
-        subprocess.run('sudo systemctl start ttyshare', shell=True)
+        #check ttyshare server connection ok? ok = True,
+        if not self.checkTTYServerConnection():
+            subprocess.run('sudo systemctl stop ttyshare', shell=True)
+            time.sleep(1)
+            subprocess.run('sudo systemctl start ttyshare', shell=True)
 
         if not self.ttyservicestarting:
             self.ttyservicestarting = 1
