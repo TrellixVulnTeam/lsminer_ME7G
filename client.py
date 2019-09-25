@@ -229,6 +229,7 @@ class lsminerClient(object):
         try:
             reqData = {}
             reqData['method'] = 3
+            reqData['minerver'] = mcfg['minerver']
             reqData['uptime'] = self.getMinerUptimeMinutes()
             reqData['minerstatus'] = 1
             gpuinfo = self.getGpuInfo()
