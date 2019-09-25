@@ -17,7 +17,7 @@ def getMinerStatus_trex(msdict):
 		minerstatus['totalhashrate'] = 0.0
 		for device in msdict['gpus']:
 			minerstatus['hashrate'].append(device['hashrate'])
-			minerstatus['totalhashrate'] += device['hashrate']
+			minerstatus['totalhashrate'] += float(device['hashrate'])
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_trex exception. msg: " + str(e))
@@ -32,7 +32,7 @@ def getMinerStatus_nbminer(msdict):
 		minerstatus['totalhashrate'] = 0.0
 		for device in msdict['miner']['devices']:
 			minerstatus['hashrate'].append(device['hashrate_raw'])
-			minerstatus['totalhashrate'] += device['hashrate_raw']
+			minerstatus['totalhashrate'] += float(device['hashrate_raw'])
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_nbminer exception. msg: " + str(e))
@@ -47,7 +47,7 @@ def getMinerStatus_gminer(msdict):
 		minerstatus['totalhashrate'] = 0.0
 		for device in msdict['devices']:
 			minerstatus['hashrate'].append(device['speed'])
-			minerstatus['totalhashrate'] += device['speed']
+			minerstatus['totalhashrate'] += float(device['speed'])
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_gminer exception. msg: " + str(e))
@@ -62,7 +62,7 @@ def getMinerStatus_ewbfminer(msdict):
 		minerstatus['totalhashrate'] = 0.0
 		for device in msdict['result']:
 			minerstatus['hashrate'].append(device['speed_sps'])
-			minerstatus['totalhashrate'] += device['speed_sps']
+			minerstatus['totalhashrate'] += float(device['speed_sps'])
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_ewbfminer exception. msg: " + str(e))
@@ -77,7 +77,7 @@ def getMinerStatus_bminer(msdict):
 		minerstatus['totalhashrate'] = 0.0
 		for device in msdict['miners'].values():
 			minerstatus['hashrate'].append(device['solver']['solution_rate'])
-			minerstatus['totalhashrate'] += device['solver']['solution_rate']
+			minerstatus['totalhashrate'] += float(device['solver']['solution_rate'])
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_bminer exception. msg: " + str(e))
@@ -91,7 +91,7 @@ def getMinerStatus_kbminer(msdict):
 		minerstatus['hashrate'] = msdict['hashrates']
 		minerstatus['totalhashrate'] = 0.0
 		for hashrate in msdict['hashrates']:
-			minerstatus['totalhashrate'] += hashrate
+			minerstatus['totalhashrate'] += float(hashrate)
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_kbminer exception. msg: " + str(e))
@@ -118,7 +118,7 @@ def getMinerStatus_hspminer(msdict, aid):
 		else:
 			k = 'eth_hash'
 		for device in devices:
-			minerstatus['totalhashrate'] += device[k]
+			minerstatus['totalhashrate'] += float(device[k])
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_hspminer exception. msg: " + str(e))
@@ -133,7 +133,7 @@ def getMinerStatus_lolminer(msdict):
 		minerstatus['totalhashrate'] = 0.0
 		for device in msdict['GPUs']:
 			minerstatus['hashrate'].append(device['hashrate'])
-			minerstatus['totalhashrate'] += device['Performance']
+			minerstatus['totalhashrate'] += float(device['Performance'])
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_lolminer exception. msg: " + str(e))
@@ -148,7 +148,7 @@ def getMinerStatus_wildrigminer(msdict):
 		minerstatus['totalhashrate'] = 0.0
 		for hashrate in msdict['hashrate']['threads']:
 			minerstatus['hashrate'].append(hashrate[0])
-			minerstatus['totalhashrate'] += hashrate[0]
+			minerstatus['totalhashrate'] += float(hashrate[0])
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_wildrigminer exception. msg: " + str(e))
@@ -163,7 +163,7 @@ def getMinerStatus_srbminer(msdict):
 		minerstatus['totalhashrate'] = 0.0
 		for device in msdict['devices']:
 			minerstatus['hashrate'].append(device['hashrate'])
-			minerstatus['totalhashrate'] += device['hashrate']
+			minerstatus['totalhashrate'] += float(device['hashrate'])
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_srbminer exception. msg: " + str(e))
@@ -178,7 +178,7 @@ def getMinerStatus_xmrigminer(msdict):
 		minerstatus['totalhashrate'] = 0.0
 		for hashrate in msdict['hashrate']['threads']:
 			minerstatus['hashrate'].append(hashrate[0])
-			minerstatus['totalhashrate'] += hashrate[0]
+			minerstatus['totalhashrate'] += float(hashrate[0])
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_wildrigminer exception. msg: " + str(e))
@@ -195,7 +195,7 @@ def getMinerStatus_claymoreminer(msdict):
 		minerstatus['totalhashrate'] = 0.0
 		for hashrate in msdict['result'][3].split(';'):
 			minerstatus['hashrate'].append(hashrate)
-			minerstatus['totalhashrate'] += hashrate
+			minerstatus['totalhashrate'] += float(hashrate)
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_wildrigminer exception. msg: " + str(e))
@@ -211,7 +211,7 @@ def getMinerStatus_CryptoDredgeMiner(buf):
 		for sline in buf.split('|'):
 			hashrate = float(sline.split(';')[2].split('=')[1])
 			minerstatus['hashrate'].append(hashrate)
-			minerstatus['totalhashrate'] += hashrate
+			minerstatus['totalhashrate'] += float(hashrate)
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_CryptoDredgeMiner exception. msg: " + str(e))
@@ -227,7 +227,7 @@ def getMinerStatus_TeamRedMiner(buf):
 		for sline in buf.split('|'):
 			hashrate = float(sline.split(',')[14].split('=')[1])
 			minerstatus['hashrate'].append(hashrate)
-			minerstatus['totalhashrate'] += hashrate
+			minerstatus['totalhashrate'] += float(hashrate)
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_TeamRedMiner exception. msg: " + str(e))
@@ -243,7 +243,7 @@ def getMinerStatus_ZEnemyMiner(buf):
 		for sline in buf.split('|'):
 			hashrate = float(sline.split(';')[8].split('=')[1])
 			minerstatus['hashrate'].append(hashrate)
-			minerstatus['totalhashrate'] += hashrate
+			minerstatus['totalhashrate'] += float(hashrate)
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_ZEnemyMiner exception. msg: " + str(e))
