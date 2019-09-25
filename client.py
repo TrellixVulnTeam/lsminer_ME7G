@@ -129,7 +129,7 @@ class lsminerClient(object):
             if self.cfg['wkname']:
                 reqData['wkname'] = self.cfg['wkname']
             else:
-                reqData['wkname'] = getIp()
+                reqData['wkname'] = getLanIp()
 
             if self.cfg['wkid']:
                 reqData['wkid'] = self.cfg['wkid']
