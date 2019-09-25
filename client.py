@@ -89,12 +89,12 @@ class lsminerClient(object):
 
     def getTTYServerString(self):
         try:
-            text = open('./boot/ttyshare', 'r')
-            for line in text.readlines():
-                if '--server ' in line:
-                    ttyserver = line.split('--server ')[1].strip()
-                    logging.info('find tty server string: ' + ttyserver)
-                    return ttyserver
+            with open('./boot/ttyshare', 'r', encoding="utf-8") as text:
+                for line in text.readlines():
+                    if '--server ' in line:
+                        ttyserver = line.split('--server ')[1].strip()
+                        logging.info('find tty server string: ' + ttyserver)
+                        return ttyserver
             logging.warning('do not find tty server string.')
         except Exception as e:
             logging.error("function getTTYServerString exception. msg: " + str(e))
@@ -129,7 +129,7 @@ class lsminerClient(object):
             if self.cfg['wkname']:
                 reqData['wkname'] = self.cfg['wkname']
             else:
-                reqData['wkname'] = getIp()
+                reqData['wkname'] = getLanIp()
 
             if self.cfg['wkid']:
                 reqData['wkid'] = self.cfg['wkid']
@@ -550,9 +550,11 @@ class lsminerClient(object):
     def ttyshareProc(self):
         filepath = "/home/lsminer/ttyshare.id"
 
-        subprocess.run('sudo systemctl stop ttyshare', shell=True)
-        time.sleep(1)
-        subprocess.run('sudo systemctl start ttyshare', shell=True)
+        #check ttyshare server connection ok? ok = True,
+        if not self.checkTTYServerConnection():
+            subprocess.run('sudo systemctl stop ttyshare', shell=True)
+            time.sleep(1)
+            subprocess.run('sudo systemctl start ttyshare', shell=True)
 
         if not self.ttyservicestarting:
             self.ttyservicestarting = 1

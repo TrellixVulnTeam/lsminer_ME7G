@@ -34,11 +34,15 @@ def getIp():
     '''获取系统内网IP地址'''
     return socket.gethostbyname(getName())
 
+def getLanIp():
+    lanIp = os.popen("ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\\2/p'").read().strip()
+    return lanIp
+
 def getAccessKey():
     '''获取用户Accesskey'''
     try:
         with open("/home/lsminer.conf", "r", encoding="utf-8") as fs:
-            key = fs.readline()
+            key = fs.readline().replace("\n","")
             return key
     except Exception as e:
         logging.error("function getAccessKey exception. msg: " + str(e))
@@ -165,3 +169,5 @@ def downloadFile(url, path):
         logging.exception(e)
     return 0
 
+if __name__ == '__main__':
+    pass

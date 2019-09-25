@@ -7,7 +7,7 @@ logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(name)s - %(l
 '''循环检测云端指令是否需要重启系统'''
 while True:
     try:
-        url = 'http://api.lsminer.com:37124/redline/'
+        url = 'http://api.lsminer.com:37124/redline/' + getWkid()
         reboot = getReboot(url)
         if reboot:
             logging.warning('recv reboot cmd! system will be reboot.')
