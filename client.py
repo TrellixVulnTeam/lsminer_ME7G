@@ -566,7 +566,7 @@ class lsminerClient(object):
                         continue
                     time.sleep(2)
                     with open(filepath, "r", encoding="utf-8") as fs:
-                        self.consoleurl = fs.readline()
+                        self.consoleurl = fs.readline().replace("\n","")
                         logging.info("ttyshareurl: " + str(self.consoleurl))
                     q.put(16)
                     break
