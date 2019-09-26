@@ -282,6 +282,7 @@ def getMinerStatus_url(apicfg):
 		url = apicfg['apiurl']
 		msdict = getMinerResultDict_url(url)
 		if msdict:
+			logging.info('URL: get miner hashrate ok!\n' + str(msdict))
 			status = None
 			if apimode == 1:
 				status = getMinerStatus_trex(msdict)
@@ -347,6 +348,7 @@ def getMinerStatus_tcp(apicfg):
 		url = apicfg['apiurl']
 		buf = getMinerResult_tcp(url)
 		if buf:
+			logging.info('TCP: get miner hashrate ok!\n' + str(buf))
 			status = None
 			if apimode == 4:
 				status = getMinerStatus_ZEnemyMiner(buf)
