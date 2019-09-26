@@ -241,9 +241,11 @@ def getMinerStatus_ZEnemyMiner(buf):
 		minerstatus['hashrate'] = []
 		minerstatus['totalhashrate'] = 0.0
 		for sline in buf.split('|'):
-			hashrate = float(sline.split(';')[8].split('=')[1])
-			minerstatus['hashrate'].append(hashrate)
-			minerstatus['totalhashrate'] += float(hashrate)
+			for l in sline.split(';'):
+				if 'KHS=' in l:
+					hashrate = float(l.split('=')[1])
+					minerstatus['hashrate'].append(hashrate)
+					minerstatus['totalhashrate'] += float(hashrate)
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_ZEnemyMiner exception. msg: " + str(e))
