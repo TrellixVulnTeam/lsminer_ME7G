@@ -132,8 +132,8 @@ def getMinerStatus_lolminer(msdict):
 		minerstatus['hashrate'] = []
 		minerstatus['totalhashrate'] = 0.0
 		for device in msdict['GPUs']:
-			minerstatus['hashrate'].append(float(device['Performance']) * 1000000.0)
-			minerstatus['totalhashrate'] += (float(device['Performance']) * 1000000.0)
+			minerstatus['hashrate'].append(float(device['Performance']))
+			minerstatus['totalhashrate'] += float(device['Performance'])
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_lolminer exception. msg: " + str(e))
