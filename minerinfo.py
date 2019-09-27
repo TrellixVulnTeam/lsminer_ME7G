@@ -194,8 +194,8 @@ def getMinerStatus_claymoreminer(msdict):
 		minerstatus['hashrate'] = []
 		minerstatus['totalhashrate'] = 0.0
 		for hashrate in msdict['result'][3].split(';'):
-			minerstatus['hashrate'].append(hashrate)
-			minerstatus['totalhashrate'] += float(hashrate)
+			minerstatus['hashrate'].append(float(hashrate)/1000)
+			minerstatus['totalhashrate'] += (float(hashrate)/1000)
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_wildrigminer exception. msg: " + str(e))
