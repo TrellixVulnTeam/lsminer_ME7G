@@ -15,6 +15,7 @@ from datetime import timedelta
 from datetime import datetime
 import tarfile
 import signal
+import copy
 
 from gpumon import *
 from minerinfo import *
@@ -365,7 +366,7 @@ class lsminerClient(object):
             if 'result' in msg and msg['result']:
                 logging.info('get miner args ok.')
 
-                self.minerargs = msg
+                self.minerargs = copy.deepcopy(msg)
                 
                 #kill miner process, the miner thread will exit
                 if self.minerpath:
