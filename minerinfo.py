@@ -208,10 +208,13 @@ def getMinerStatus_CryptoDredgeMiner(buf):
 		minerstatus['uptime'] = 0
 		minerstatus['hashrate'] = []
 		minerstatus['totalhashrate'] = 0.0
-		for sline in buf.split('|'):
-			hashrate = float(sline.split(';')[2].split('=')[1])
-			minerstatus['hashrate'].append(hashrate)
-			minerstatus['totalhashrate'] += float(hashrate)
+		for i in range(16):
+			for sline in buf.split('|'):
+				if 'GPU='+str(i)+';' in sline:
+					hashrate = float(sline.split(';')[2].split('=')[1])
+					minerstatus['hashrate'].append(hashrate)
+					minerstatus['totalhashrate'] += float(hashrate)
+					break
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_CryptoDredgeMiner exception. msg: " + str(e))
@@ -224,11 +227,12 @@ def getMinerStatus_TeamRedMiner(buf):
 		minerstatus['uptime'] = 0
 		minerstatus['hashrate'] = []
 		minerstatus['totalhashrate'] = 0.0
-		for sline in buf.split('|')[1].split(','):
+		for sline in buf.split('|'):
 			if 'MHS av' in sline:
-				hashrate = float(sline.split('=')[1]) * 1000000
-				minerstatus['hashrate'].append(hashrate)
-				minerstatus['totalhashrate'] += float(hashrate)
+				for l in sline.split(','):
+					hashrate = float(l.split('=')[1]) * 1000000
+					minerstatus['hashrate'].append(hashrate)
+					minerstatus['totalhashrate'] += float(hashrate)
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_TeamRedMiner exception. msg: " + str(e))
