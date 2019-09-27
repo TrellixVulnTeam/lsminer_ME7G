@@ -130,7 +130,7 @@ class lsminerClient(object):
             if self.cfg['wkname']:
                 reqData['wkname'] = self.cfg['wkname']
             else:
-                reqData['wkname'] = getLanIp().replace('.', '_')
+                reqData['wkname'] = getLanIp().replace('.', 'X')
 
             if self.cfg['wkid']:
                 reqData['wkid'] = self.cfg['wkid']
