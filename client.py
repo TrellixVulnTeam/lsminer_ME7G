@@ -365,9 +365,12 @@ class lsminerClient(object):
             logging.info('recv server get miner args msg: ' + str(msg))
             if 'result' in msg and msg['result']:
                 logging.info('get miner args ok.')
-
-                self.minerargs = copy.deepcopy(msg)
                 
+                self.minerargs = copy.deepcopy(msg)
+                logging.info('mmmmmmmmmmmmmmmmmmmmmmmmmmmmm')
+                logging.info(msg)
+                logging.info('ssssssssssssssssssssssssssss')
+                logging.info(self.minerargs)
                 #kill miner process, the miner thread will exit
                 if self.minerpath:
                     self.killAllMiners(self.minerpath[1:])
