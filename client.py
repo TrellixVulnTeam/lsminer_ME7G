@@ -230,6 +230,8 @@ class lsminerClient(object):
         try:
             reqData = {}
             reqData['method'] = 3
+            logging.info('ggggggggggggggggggg')
+            logging.info(mcfg)
             reqData['minerver'] = mcfg['minerver']
             reqData['uptime'] = self.getMinerUptimeMinutes()
             reqData['minerstatus'] = 1
