@@ -500,7 +500,7 @@ class lsminerClient(object):
             elif msg['method'] == 15:
                 pass
             elif msg['method'] == 16:
-                self.onGetTTYShareId(msg)
+                pass
             else:
                 logging.info('unknown server msg method! msg: ' + str(msg))
         else:
@@ -548,7 +548,7 @@ class lsminerClient(object):
             self.sendGetMinerArgsReq()
         elif cmd == 6:
             self.sendLogoutReq()
-        elif cmd == 16:
+        elif cmd == 14:
             self.sendConsoleIdReq()
         else:
             logging.error('unknown cmd. cmd: ' + str(cmd))
@@ -574,7 +574,7 @@ class lsminerClient(object):
                     with open(filepath, "r", encoding="utf-8") as fs:
                         self.consoleurl = fs.readline().replace("\n","")
                         logging.info("ttyshareurl: " + str(self.consoleurl))
-                    q.put(16)
+                    q.put(14)
                     break
                 except Exception as e:
                     logging.info('ttyshareProc exception. msg: ' + str(e))
