@@ -192,7 +192,7 @@ class lsminerClient(object):
     def sendConsoleIdReq(self):
         try:
             reqData = {}
-            reqData['method'] = 16
+            reqData['method'] = 14
             reqData['params'] = self.consoleurl
             reqData['os'] = self.cfg['os']
             reqjson = json.dumps(reqData)
