@@ -230,8 +230,6 @@ class lsminerClient(object):
         try:
             reqData = {}
             reqData['method'] = 3
-            logging.info('ggggggggggggggggggg')
-            logging.info(mcfg)
             reqData['minerver'] = mcfg['minerver']
             reqData['uptime'] = self.getMinerUptimeMinutes()
             reqData['minerstatus'] = 1
@@ -368,11 +366,8 @@ class lsminerClient(object):
             if 'result' in msg and msg['result']:
                 logging.info('get miner args ok.')
                 
-                #self.minerargs = copy.deepcopy(msg)
+                
                 self.minerargs = msg
-                logging.info('mmmmmmmmmmmmmmmmmmmmmmmmmmmmm')
-                logging.info(msg)
-                logging.info('ssssssssssssssssssssssssssss')
                 logging.info(self.minerargs)
                 #kill miner process, the miner thread will exit
                 if self.minerpath:
