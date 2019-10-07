@@ -278,12 +278,12 @@ class lsminerClient(object):
                     thread = threading.Thread(target=lsminerClient.ttyshareProc, args=(self,))
                     thread.start()
 
-                mcfg = self.minerargs
-                reqData = self.getReportData(mcfg)
+                #mcfg = self.minerargs
+                reqData = self.getReportData(self.minerargs)
                 while not reqData:
                     logging.warning('getReportData failed. sleep 3 seconds and try again.')
                     time.sleep(3)
-                    reqData = self.getReportData(mcfg)
+                    reqData = self.getReportData(self.minerargs)
 
                 logging.info('lsminerClient send miner report data.')
                 logging.info(reqData)
@@ -368,7 +368,8 @@ class lsminerClient(object):
             if 'result' in msg and msg['result']:
                 logging.info('get miner args ok.')
                 
-                self.minerargs = copy.deepcopy(msg)
+                #self.minerargs = copy.deepcopy(msg)
+                self.minerargs = msg
                 logging.info('mmmmmmmmmmmmmmmmmmmmmmmmmmmmm')
                 logging.info(msg)
                 logging.info('ssssssssssssssssssssssssssss')
