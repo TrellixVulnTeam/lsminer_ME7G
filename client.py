@@ -496,7 +496,7 @@ class lsminerClient(object):
             elif msg['method'] == 13:
                 pass
             elif msg['method'] == 14:
-                pass
+                self.onGetTTYShareId(msg)
             elif msg['method'] == 15:
                 pass
             elif msg['method'] == 16:
