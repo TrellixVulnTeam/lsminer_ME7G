@@ -1,6 +1,7 @@
 import os
 import platform
 from cffi import FFI
+from tools import *
 
 ffi = FFI()
 
@@ -185,10 +186,15 @@ def fsGetGpuInfo():
         tempC = ffi.new("unsigned int*", 0)
         fanpcnt = ffi.new("unsigned int*", 0)
         power_usage = ffi.new("unsigned int*", 0)
+        bname = getBoardName()
         for i in range(count[0]):
             deviceinfo = {}
-            lib.wrap_amdsysfs_get_vid_pid_subsysid(fsHandle, 0, name, 128)
-            deviceinfo['name'] = ffi.string(name).decode().strip()
+            if bname:
+                deviceinfo['name'] = bname[i]
+            else:
+                lib.wrap_amdsysfs_get_vid_pid_subsysid(fsHandle, i, name, 128)
+                deviceinfo['name'] = ffi.string(name).decode().strip()
+            
             lib.wrap_amdsysfs_get_tempC(fsHandle, i, tempC)
             deviceinfo['tempC'] = tempC[0]
             lib.wrap_amdsysfs_get_fanpcnt(fsHandle, i, fanpcnt)

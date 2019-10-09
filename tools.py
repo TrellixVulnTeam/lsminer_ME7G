@@ -154,6 +154,16 @@ def getVedioCard():
             else:
                 cardstr = name
     return cardstr
+
+def getBoardName():
+    '''获取显卡系列名称'''
+    boardname = []
+    pci = os.popen('/opt/amdgpu-pro/bin/clinfo').read().splitlines(False)
+    for l in pci:
+        if 'Board name:' in l:
+            name = l.split(':')[1].strip()
+            boardname.append(name)
+    return boardname
     
 def downloadFile(url, path):
     '''从url下载文件保存到path路径，path包含文件名'''
@@ -170,4 +180,4 @@ def downloadFile(url, path):
     return 0
 
 if __name__ == '__main__':
-    pass
+    print(getBoardName())
