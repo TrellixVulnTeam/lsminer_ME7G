@@ -1,7 +1,7 @@
 import os
 import platform
 from cffi import FFI
-from tools import *
+from tools import getBoardName
 
 ffi = FFI()
 
