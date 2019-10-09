@@ -1,7 +1,6 @@
 import os
 import platform
 from cffi import FFI
-from tools import getBoardName
 
 ffi = FFI()
 
@@ -176,6 +175,15 @@ def fsGetGpuName():
         ffi.release(count)
         ffi.release(pci)
     return gpuName
+
+def getBoardName():
+    boardname = []
+    pci = os.popen('/opt/amdgpu-pro/bin/clinfo').read().splitlines(False)
+    for l in pci:
+        if 'Board name:' in l:
+            name = l.split(':')[1].strip()
+            boardname.append(name)
+    return boardname
 
 def fsGetGpuInfo():
     info = []
