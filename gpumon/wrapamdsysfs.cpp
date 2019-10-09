@@ -129,7 +129,7 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
                 {
                     PciDomain = PciBus = PciDevice = PciFunction = -1;
                 }
-                break;
+                continue;
             }
 
             if (line.length() > 15 && line.substr(0, 6) == "PCI_ID")
@@ -147,7 +147,7 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
                 {
                     vid = pid = -1;
                 }
-                break;
+                continue;
             }
 
             if (line.length() > 20 && line.substr(0, 13) == "PCI_SUBSYS_ID")
@@ -165,7 +165,7 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
                 {
                     subsysid = -1;
                 }
-                break;
+                continue;
             }
         }
 
@@ -191,8 +191,8 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
     // Nothing collected - exit
     if (!devices.size())
     {
-        cwarn << "Failed to obtain all required AMD file pointers";
-        cwarn << "AMD hardware monitoring disabled";
+        cwarn << "Failed to obtain AMD sysfs info\r\n";
+        cwarn << "AMD hardware monitoring disabled\r\n";
         return nullptr;
     }
 
@@ -200,8 +200,8 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
     sysfsh = (wrap_amdsysfs_handle*)calloc(1, sizeof(wrap_amdsysfs_handle));
     if (sysfsh == nullptr)
     {
-        cwarn << "Failed allocate memory";
-        cwarn << "AMD hardware monitoring disabled";
+        cwarn << "Failed allocate memory\r\n";
+        cwarn << "AMD hardware monitoring disabled\r\n";
         return sysfsh;
     }
     sysfsh->sysfs_gpucount = gpucount;
