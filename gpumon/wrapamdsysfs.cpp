@@ -170,7 +170,7 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
         }
 
         // If we got an error skip
-        if (PciDomain == -1 || vid == -1 || subsysid == -1)
+        if (PciDomain == -1)
             continue;
 
         // We got all information needed
@@ -367,7 +367,7 @@ int wrap_amdsysfs_get_vid_pid_subsysid(wrap_amdsysfs_handle* sysfsh, int index, 
     if (index < 0 || index >= sysfsh->sysfs_gpucount || bufsize < 14)
         return -1;
 
-    snprintf(buf, bufsize, "%04x:%04x:%04x", sysfsh->sysfs_pci_vid[index], sysfsh->sysfs_pci_pid[index], sysfsh->sysfs_pci_subsysid[index]);
+    snprintf(buf, bufsize, "%04X:%04X:%04X", sysfsh->sysfs_pci_vid[index], sysfsh->sysfs_pci_pid[index], sysfsh->sysfs_pci_subsysid[index]);
 
     return 0;
 }
