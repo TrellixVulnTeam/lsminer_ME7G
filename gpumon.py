@@ -32,6 +32,7 @@ ffi.cdef('''
     int wrap_amdsysfs_get_fanpcnt(wrap_amdsysfs_handle* sysfsh, int index, unsigned int* fanpcnt);
     int wrap_amdsysfs_get_power_usage(wrap_amdsysfs_handle* sysfsh, int index, unsigned int* milliwatts);
     int wrap_amdsysfs_get_gpu_pci(wrap_amdsysfs_handle* sysfsh, int index, char* pcibuf, int bufsize);
+    int wrap_amdsysfs_get_vid_pid_subsysid(wrap_amdsysfs_handle* sysfsh, int index, char* buf, int bufsize);
 
 ''')
 
@@ -180,15 +181,14 @@ def fsGetGpuInfo():
     if fsHandle:
         count = ffi.new("int*", 0)
         lib.wrap_amdsysfs_get_gpucount(fsHandle, count)
-        pci = ffi.new("char[128]")
+        name = ffi.new("char[128]")
         tempC = ffi.new("unsigned int*", 0)
         fanpcnt = ffi.new("unsigned int*", 0)
         power_usage = ffi.new("unsigned int*", 0)
         for i in range(count[0]):
             deviceinfo = {}
-            lib.wrap_amdsysfs_get_gpu_pci(fsHandle, i, pci, 128)
-            deviceinfo['pci'] = ffi.string(pci).decode().strip()
-            deviceinfo['name'] = fsGetGpuNameByPci(deviceinfo['pci'])
+            lib.wrap_amdsysfs_get_vid_pid_subsysid(fsHandle, 0, name, 128)
+            deviceinfo['name'] = ffi.string(name).decode().strip()
             lib.wrap_amdsysfs_get_tempC(fsHandle, i, tempC)
             deviceinfo['tempC'] = tempC[0]
             lib.wrap_amdsysfs_get_fanpcnt(fsHandle, i, fanpcnt)
@@ -197,12 +197,11 @@ def fsGetGpuInfo():
             deviceinfo['power_usage'] = power_usage[0]
             info.append(deviceinfo)
         ffi.release(count)
-        ffi.release(pci)
+        ffi.release(name)
         ffi.release(tempC)
         ffi.release(fanpcnt)
         ffi.release(power_usage)
     return info
-
 
 if __name__ == '__main__':
     print(amdGetGpuInfo())

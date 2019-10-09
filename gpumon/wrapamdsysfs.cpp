@@ -109,6 +109,7 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
         std::ifstream ifs(dbuf, std::ios::binary);
         std::string line;
         int PciDomain = -1, PciBus = -1, PciDevice = -1, PciFunction = -1;
+        int vid = -1, pid = -1, subsysid = -1;
         while (std::getline(ifs, line))
         {
             if (line.length() > 24 && line.substr(0, 13) == "PCI_SLOT_NAME")
@@ -130,10 +131,46 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
                 }
                 break;
             }
+
+            if (line.length() > 15 && line.substr(0, 6) == "PCI_ID")
+            {
+                std::string pciId = line.substr(7);
+                std::vector<std::string> pciIdParts;
+                boost::split(pciIdParts, pciId, [](char c) { return (c == ':'); });
+
+                try
+                {
+                    vid = std::stoi(pciIdParts.at(0), nullptr, 16);
+                    pid = std::stoi(pciIdParts.at(1), nullptr, 16);
+                }
+                catch (const std::exception&)
+                {
+                    vid = pid = -1;
+                }
+                break;
+            }
+
+            if (line.length() > 20 && line.substr(0, 13) == "PCI_SUBSYS_ID")
+            {
+                std::string pciId = line.substr(14);
+                std::vector<std::string> pciIdParts;
+                boost::split(pciIdParts, pciId, [](char c) { return (c == ':'); });
+
+                try
+                {
+                    //vid = std::stoi(pciIdParts.at(0), nullptr, 16);
+                    subsysid = std::stoi(pciIdParts.at(1), nullptr, 16);
+                }
+                catch (const std::exception&)
+                {
+                    subsysid = -1;
+                }
+                break;
+            }
         }
 
         // If we got an error skip
-        if (PciDomain == -1)
+        if (PciDomain == -1 || vid == -1 || subsysid == -1)
             continue;
 
         // We got all information needed
@@ -145,6 +182,9 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
         pInfo.PciBus = PciBus;
         pInfo.PciDevice = PciDevice;
         pInfo.PciFunction = PciFunction;
+        pInfo.vid = vid;
+        pInfo.pid = pid;
+        pInfo.subsysid = subsysid;
         devices.push_back(pInfo);
     }
 
@@ -171,6 +211,9 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
     sysfsh->sysfs_pci_bus_id = (unsigned int*)calloc(gpucount, sizeof(unsigned int));
     sysfsh->sysfs_pci_device_id = (unsigned int*)calloc(gpucount, sizeof(unsigned int));
     sysfsh->sysfs_pci_function_id = (unsigned int*)calloc(gpucount, sizeof(unsigned int));
+    sysfsh->sysfs_pci_vid = (unsigned int*)calloc(gpucount, sizeof(unsigned int));
+    sysfsh->sysfs_pci_pid = (unsigned int*)calloc(gpucount, sizeof(unsigned int));
+    sysfsh->sysfs_pci_subsysid = (unsigned int*)calloc(gpucount, sizeof(unsigned int));
 
     gpucount = 0;
     for (auto const& device : devices)
@@ -181,6 +224,9 @@ wrap_amdsysfs_handle* wrap_amdsysfs_create()
         sysfsh->sysfs_pci_bus_id[gpucount] = device.PciBus;
         sysfsh->sysfs_pci_device_id[gpucount] = device.PciDevice;
         sysfsh->sysfs_pci_function_id[gpucount] = device.PciFunction;
+        sysfsh->sysfs_pci_vid[gpucount] = device.vid;
+        sysfsh->sysfs_pci_pid[gpucount] = device.pid;
+        sysfsh->sysfs_pci_subsysid[gpucount] = device.subsysid;
 
         gpucount++;
     }
@@ -312,6 +358,16 @@ int wrap_amdsysfs_get_gpu_pci(wrap_amdsysfs_handle* sysfsh, int index, char* pci
         return -1;
 
     snprintf(pcibuf, bufsize, "%02x:%02x.%01x", sysfsh->sysfs_pci_bus_id[index], sysfsh->sysfs_pci_device_id[index], sysfsh->sysfs_pci_function_id[index]);
+
+    return 0;
+}
+
+int wrap_amdsysfs_get_vid_pid_subsysid(wrap_amdsysfs_handle* sysfsh, int index, char* buf, int bufsize)
+{
+    if (index < 0 || index >= sysfsh->sysfs_gpucount || bufsize < 14)
+        return -1;
+
+    snprintf(buf, bufsize, "%04x:%04x:%04x", sysfsh->sysfs_pci_vid[index], sysfsh->sysfs_pci_pid[index], sysfsh->sysfs_pci_subsysid[index]);
 
     return 0;
 }

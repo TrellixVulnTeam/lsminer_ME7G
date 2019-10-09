@@ -20,6 +20,9 @@ typedef struct
     unsigned int* sysfs_pci_bus_id;
     unsigned int* sysfs_pci_device_id;
     unsigned int* sysfs_pci_function_id;
+    unsigned int* sysfs_pci_vid;
+    unsigned int* sysfs_pci_pid;
+    unsigned int* sysfs_pci_subsysid;
 } wrap_amdsysfs_handle;
 
 typedef struct
@@ -30,6 +33,9 @@ typedef struct
     int PciBus = -1;
     int PciDevice = -1;
     int PciFunction = -1;
+    int vid = -1;
+    int pid = -1;
+    int subsysid = -1;
 
 } pciInfo;
 
@@ -45,6 +51,8 @@ int wrap_amdsysfs_get_fanpcnt(wrap_amdsysfs_handle* sysfsh, int index, unsigned 
 int wrap_amdsysfs_get_power_usage(wrap_amdsysfs_handle* sysfsh, int index, unsigned int* milliwatts);
 
 int wrap_amdsysfs_get_gpu_pci(wrap_amdsysfs_handle* sysfsh, int index, char* pcibuf, int bufsize);
+
+int wrap_amdsysfs_get_vid_pid_subsysid(wrap_amdsysfs_handle* sysfsh, int index, char* buf, int bufsize);
 
 #if defined(__cplusplus)
 }
