@@ -236,10 +236,11 @@ class lsminerClient(object):
             gpuinfo = self.getGpuInfo()
             if gpuinfo:
                 minerinfo = getMinerStatus(mcfg)
+                gpustatus = ""
                 if not minerinfo:
                     reqData['hashrate'] = 0
                     for i in range(len(gpuinfo)):
-                        gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + str(gpuinfo[i]['tempC']) + '|0|' + str(gpuinfo[i]['fanpcnt']) + '|' + str(gpuinfo[i]['power_usage'])
+                        gpustatus += str(i) + '|'+ gpuinfo[i]['name'] + '|' + str(gpuinfo[i]['tempC']) + '|0|' + str(gpuinfo[i]['fanpcnt']) + '|' + str(gpuinfo[i]['power_usage'])
                         if i+1 == len(gpuinfo):
                             gpustatus += '$'
                         else:
@@ -249,9 +250,9 @@ class lsminerClient(object):
                     mc = len(minerinfo['hashrate'])
                     for i in range(len(gpuinfo)):
                         if i < mc:
-                            gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + str(gpuinfo[i]['tempC']) + '|' + str(minerinfo['hashrate'][i]) + '|' + str(gpuinfo[i]['fanpcnt']) + '|' + str(gpuinfo[i]['power_usage'])
+                            gpustatus += str(i) + '|'+ gpuinfo[i]['name'] + '|' + str(gpuinfo[i]['tempC']) + '|' + str(minerinfo['hashrate'][i]) + '|' + str(gpuinfo[i]['fanpcnt']) + '|' + str(gpuinfo[i]['power_usage'])
                         else:
-                            gpustatus = str(i) + '|'+ gpuinfo[i]['name'] + '|' + str(gpuinfo[i]['tempC']) + '|0|' + str(gpuinfo[i]['fanpcnt']) + '|' + str(gpuinfo[i]['power_usage'])
+                            gpustatus += str(i) + '|'+ gpuinfo[i]['name'] + '|' + str(gpuinfo[i]['tempC']) + '|0|' + str(gpuinfo[i]['fanpcnt']) + '|' + str(gpuinfo[i]['power_usage'])
                         
                         if i+1 == len(gpuinfo):
                             gpustatus += '$'
