@@ -41,6 +41,8 @@ class lsminerClient(object):
         self.accesskey = getAccessKey()
         self.ttyserver = self.getTTYServerString()
         self.ttyservicestarting = 0
+        self.nvcount = None
+        self.amdcount = None
 
     def __del__(self):
         pass
@@ -60,17 +62,18 @@ class lsminerClient(object):
             return fsGetGpuInfo()
 
     def checkGpuType(self):
-        n = nvmlGetGpuCount()
-        a = fsGetGpuCount()
+        self.nvcount = n = nvmlGetGpuCount()
+        self.amdcount = a = fsGetGpuCount()
         return  1 if n > a else 2
 
     def checkServerConnection(self):
         try:
             cs = self.cfg['ip'].strip() + ':' + self.cfg['port'].strip()
-            netlines = os.popen('netstat -ent').read().splitlines(False)
-            for line in netlines:
-                if cs in line and 'ESTABLISHED' in line:
-                    return True
+            with os.popen('netstat -ent') as p:
+                netlines = p.read().splitlines(False)
+                for line in netlines:
+                    if cs in line and 'ESTABLISHED' in line:
+                        return True
         except Exception as e:
             logging.error("function checkServerConnection exception. msg: " + str(e))
             logging.exception(e)
@@ -79,10 +82,11 @@ class lsminerClient(object):
     def checkTTYServerConnection(self):
         try:
             if self.ttyserver:
-                netlines = os.popen('netstat -ent').read().splitlines(False)
-                for line in netlines:
-                    if self.ttyserver in line and 'ESTABLISHED' in line:
-                        return True
+                with os.popen('netstat -ent') as p:
+                    netlines = p.read().splitlines(False)
+                    for line in netlines:
+                        if self.ttyserver in line and 'ESTABLISHED' in line:
+                            return True
         except Exception as e:
             logging.error("function checkTTYServerConnection exception. msg: " + str(e))
             logging.exception(e)
@@ -326,14 +330,14 @@ class lsminerClient(object):
     def killAllMiners(self, path):
         try:
             cmd = 'ps -x | grep ' + path
-            o = os.popen(cmd).read()
-            lines = o.splitlines(False)
-            for l in lines:
-                p = l.lstrip().split(' ')
-                if 'grep' in p:
-                    continue
-                logging.info('kill task pid: ' + p[0])
-                os.kill(int(p[0]), signal.SIGKILL)
+            with os.popen(cmd) as p:
+                lines = p.read().splitlines(False)
+                for l in lines:
+                    p = l.lstrip().split(' ')
+                    if 'grep' in p:
+                        continue
+                    logging.info('kill task pid: ' + p[0])
+                    os.kill(int(p[0]), signal.SIGKILL)
         except Exception as e:
             logging.error("function killAllMiners exception. msg: " + str(e))
             logging.exception(e)
@@ -456,6 +460,44 @@ class lsminerClient(object):
         logging.info('recv server get ttyshare msg: ' + str(msg))
         thread = threading.Thread(target=lsminerClient.ttyshareProc, args=(self,))
         thread.start()
+
+    def onOverClock(self, msg):
+        logging.info('recv server overclock msg: ' + str(msg))
+        cores = ''
+        mems = ''
+        pows = ''
+        temps = ''
+        fans = ''
+        for odata in msg['params'].split('$'):
+            args = odata.split('|')
+            cores += args[1] + ','
+            mems += args[2] + ','
+            pows += args[3] + ','
+            temps += args[4] + ','
+            fans += args[5] + ','
+
+        if self.gpuType == 1:
+            os.putenv('GPU_COUNT_NV', str(self.nvcount))
+            os.putenv('NV_CORE', cores)
+            os.putenv('NV_MEMORY', mems)
+            os.putenv('NV_POWER', pows)
+            os.putenv('NV_TEMP', temps)
+            os.putenv('NV_FAN', fans)
+        else:
+            os.putenv('GPU_COUNT_AMD', str(self.amdcount))
+            os.putenv('AMD_CORE', cores)
+            os.putenv('AMD_MEMORY', mems)
+            os.putenv('AMD_POWER', pows)
+            os.putenv('AMD_TEMP', temps)
+            os.putenv('AMD_FAN', fans)
+        
+        with os.popen('/home/lsminer/lsminer/overclock') as p:
+            netlines = p.read().splitlines(False)
+            print(netlines)
+        
+        #restart miner 
+        os.system('sudo systemctl restart miner')
+
 
     def processMsg(self, msg):
         if 'method' in msg:

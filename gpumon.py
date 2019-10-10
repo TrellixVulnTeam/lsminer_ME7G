@@ -154,12 +154,13 @@ def fsGetGpuCount():
     return gpuCount
 
 def fsGetGpuNameByPci(pcinum):
-    lines = os.popen('lspci | grep VGA').read().splitlines(False)
-    for l in lines:
-        pci = l.split('VGA compatible controller:')[0].strip()
-        name = l.split('VGA compatible controller:')[1].strip()
-        if pci == pcinum:
-            return name
+    with os.popen('lspci | grep VGA') as p:
+        lines = p.read().splitlines(False)
+        for l in lines:
+            pci = l.split('VGA compatible controller:')[0].strip()
+            name = l.split('VGA compatible controller:')[1].strip()
+            if pci == pcinum:
+                return name
     return ''
 
 def fsGetGpuName():
@@ -178,11 +179,12 @@ def fsGetGpuName():
 
 def getBoardName():
     boardname = []
-    pci = os.popen('/opt/amdgpu-pro/bin/clinfo').read().splitlines(False)
-    for l in pci:
-        if 'Board name:' in l:
-            name = l.split(':')[1].strip()
-            boardname.append(name)
+    with os.popen('/opt/amdgpu-pro/bin/clinfo') as p:
+        pci = p.read().splitlines(False)
+        for l in pci:
+            if 'Board name:' in l:
+                name = l.split(':')[1].strip()
+                boardname.append(name)
     return boardname
 
 def fsGetGpuInfo():

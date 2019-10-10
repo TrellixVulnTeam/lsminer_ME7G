@@ -33,6 +33,23 @@ function intro()
 	echo -e "${DARKGRAY}------------------------------------------------------------------------------${RESETCOLOR}\n\n"
 }
 
+#buckup amd tables
+[ -d "/run/lsminer/amd_tables" ] && sudo rm -rf /run/lsminer/amd_tables
+
+
+if [ "$(lspci | grep -E "VGA|3D controller" | grep AMD | wc -l)" -gt 0 ]; then	
+
+	sudo mkdir /run/lsminer/amd_tables
+
+	CARDS=$(sudo ls -d1 /sys/class/drm/card*/device/pp_table | sort -V | grep -Poi "(\d+)" | xargs)
+	for ID in $CARDS; do
+		sudo mkdir /run/lsminer/amd_tables/card$ID
+		sudo cp /sys/class/drm/card$ID/device/pp_table /run/lsminer/amd_tables/card$ID/pp_table
+		sleep 0.2 && sync
+	done 
+
+fi
+
 
 #检查accesskey文件是否正常，如果为空，用户必须手动输入accesskey
 ACCESSKEY=$(cat /home/lsminer.conf | cut -d ' ' -f 1 | tr '[:upper:]' '[:lower:]' | tr -d '\r' | tr -d '\n')
@@ -51,7 +68,7 @@ export GPU_MAX_ALLOC_PERCENT=100
 export GPU_MAX_HEAP_SIZE=100
 export GPU_SINGLE_ALLOC_PERCENT=100
 export GPU_USE_SYNC_OBJECTS=1
-export GPU_FORCE_64BIT_PTR=1 # CAUTION !!
+#export GPU_FORCE_64BIT_PTR=1 # CAUTION !!
 export LD_LIBRARY_PATH=/home/lsminer/lsminer/libcuda
 
 wait && sync && sleep 1

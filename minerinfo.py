@@ -259,10 +259,11 @@ def getMinerStatus_ZEnemyMiner(buf):
 
 def checkMinerApiPort(port):
 	try:
-		lines = os.popen('netstat -lnt').read().splitlines(False)
-		for line in lines:
-			if str(port) in line:
-				return True
+		with os.popen('netstat -lnt') as p:
+			lines = p.read().splitlines(False)
+			for line in lines:
+				if str(port) in line:
+					return True
 	except Exception as e:
 		logging.error("function checkMinerApiPort exception. msg: " + str(e))
 		logging.exception(e)
