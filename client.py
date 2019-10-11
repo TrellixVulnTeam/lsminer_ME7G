@@ -537,7 +537,7 @@ class lsminerClient(object):
             elif msg['method'] == 9:
                 self.onWelcome(msg)
             elif msg['method'] == 10:
-                pass
+                self.overclock(msg)
             elif msg['method'] ==11:
                 pass
             elif msg['method'] == 12:
