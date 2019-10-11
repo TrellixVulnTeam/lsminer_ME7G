@@ -68,7 +68,7 @@ class lsminerClient(object):
 
     def checkServerConnection(self):
         try:
-            cs = self.cfg['ip'].strip() + ':' + self.cfg['port'].strip()
+            cs = self.cfg['ip'].strip() + ':' + str(self.cfg['port'])
             with os.popen('netstat -ent') as p:
                 netlines = p.read().splitlines(False)
                 for line in netlines:
@@ -567,8 +567,10 @@ class lsminerClient(object):
                 data = self.sock.recv(4096)
                 if not data:
                     logging.warning('server close socket. try to reconnect.')
-                    self.sock = None
-                    q.put(1)
+                    time.sleep(1)
+                    if not self.checkServerConnection():
+                        self.sock = None
+                        q.put(1)
                     continue
 
                 buffer += data.decode()
