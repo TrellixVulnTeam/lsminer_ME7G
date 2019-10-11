@@ -463,11 +463,13 @@ class lsminerClient(object):
 
     def onOverClock(self, msg):
         logging.info('recv server overclock msg: ' + str(msg))
+
         cores = ''
         mems = ''
         pows = ''
         temps = ''
         fans = ''
+
         for odata in msg['params'].split('$'):
             args = odata.split('|')
             cores += args[1] + ','
@@ -477,7 +479,17 @@ class lsminerClient(object):
             fans += args[5] + ','
 
         os.putenv('GPU_COUNT_NV', '0')
+        os.putenv('NV_CORE', '')
+        os.putenv('NV_MEMORY', '')
+        os.putenv('NV_POWER', '')
+        os.putenv('NV_TEMP', '')
+        os.putenv('NV_FAN', '')
         os.putenv('GPU_COUNT_AMD', '0')
+        os.putenv('AMD_CORE', '')
+        os.putenv('AMD_MEMORY', '')
+        os.putenv('AMD_POWER', '')
+        os.putenv('AMD_TEMP', '')
+        os.putenv('AMD_FAN', '')
 
         if self.gpuType == 1:
             os.putenv('GPU_COUNT_NV', str(self.nvcount))
@@ -494,6 +506,7 @@ class lsminerClient(object):
             os.putenv('AMD_TEMP', temps)
             os.putenv('AMD_FAN', fans)
         
+        #overclock get over clocl args by environment variables
         os.system('/home/lsminer/lsminer/overclock')
         #with os.popen('/home/lsminer/lsminer/overclock') as p:
         #    netlines = p.read().splitlines(False)
