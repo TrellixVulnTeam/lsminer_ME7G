@@ -11,7 +11,7 @@ export GPU_USE_SYNC_OBJECTS=1
 export GPU_MAX_ALLOC_PERCENT=100
 export GPU_SINGLE_ALLOC_PERCENT=100
 export DISPLAY=:0
-
+export XAUTHORITY=/var/run/lightdm/root/:0
 
 if [ "$GPU_COUNT_AMD" -gt 0 ]; then
 
@@ -130,9 +130,6 @@ if [ "$GPU_COUNT_NV" -gt 0 ]; then
         Fans[$x]=${Fans[$x-1]}
     done
 
-    #export DISPLAY=:0
-    #export XAUTHORITY=/var/run/lightdm/root/:0
-
     sudo nvidia-smi -pm 1
 
     # Overclock Loop
@@ -150,7 +147,7 @@ if [ "$GPU_COUNT_NV" -gt 0 ]; then
         elif [[ $GPU =~ "P102-100" ]]; then TYPE=1
         fi
 
-        [ -n "${Pows[$i]}" ] && nvidia-smi -i $i -pl ${Pows[$i]} &
+        [ -n "${Pows[$i]}" ] && sudo nvidia-smi -i $i -pl ${Pows[$i]} &
         [ -n "${Cores[$i]}" ] && parameters+=" -a [gpu:$i]/GPUGraphicsClockOffset[$TYPE]=${Cores[$i]}"
         [ -n "${Mems[$i]}" ] && parameters+=" -a [gpu:$i]/GPUMemoryTransferRateOffset[$TYPE]=${Mems[$i]}"
         [ -n "${Fans[$i]}" ] && parameters+=" -a [gpu:$i]/GPUFanControlState=1 -a [fan:$i]/GPUTargetFanSpeed=${Fans[$i]}"

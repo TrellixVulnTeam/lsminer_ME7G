@@ -476,6 +476,9 @@ class lsminerClient(object):
             temps += args[4] + ','
             fans += args[5] + ','
 
+        os.putenv('GPU_COUNT_NV', '0')
+        os.putenv('GPU_COUNT_AMD', '0')
+
         if self.gpuType == 1:
             os.putenv('GPU_COUNT_NV', str(self.nvcount))
             os.putenv('NV_CORE', cores)
@@ -491,12 +494,13 @@ class lsminerClient(object):
             os.putenv('AMD_TEMP', temps)
             os.putenv('AMD_FAN', fans)
         
-        with os.popen('/home/lsminer/lsminer/overclock') as p:
-            netlines = p.read().splitlines(False)
-            print(netlines)
+        os.system('/home/lsminer/lsminer/overclock')
+        #with os.popen('/home/lsminer/lsminer/overclock') as p:
+        #    netlines = p.read().splitlines(False)
+        #    print(netlines)
         
         #restart miner 
-        os.system('sudo systemctl restart miner')
+        #os.system('sudo systemctl restart miner')
 
 
     def processMsg(self, msg):
