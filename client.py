@@ -157,6 +157,7 @@ class lsminerClient(object):
             logging.exception(e)
             time.sleep(1)
             if not self.checkServerConnection():
+                subprocess.run('sudo systemctl restart miner', shell=True)
                 self.sock = None
             return None     
 
@@ -175,6 +176,7 @@ class lsminerClient(object):
             logging.exception(e)
             time.sleep(1)
             if not self.checkServerConnection():
+                subprocess.run('sudo systemctl restart miner', shell=True)
                 self.sock = None
             return None
 
@@ -209,6 +211,7 @@ class lsminerClient(object):
             logging.exception(e)
             time.sleep(1)
             if not self.checkServerConnection():
+                subprocess.run('sudo systemctl restart miner', shell=True)
                 self.sock = None
             return None
 
@@ -289,12 +292,14 @@ class lsminerClient(object):
                     logging.warning('socket unusable.')
                     time.sleep(1)
                     if not self.checkServerConnection():
+                        subprocess.run('sudo systemctl restart miner', shell=True)
                         q.put(1)
             except Exception as e:
                 logging.error("function reportThread exception. msg: " + str(e))
                 logging.exception(e)
                 time.sleep(1)
                 if not self.checkServerConnection():
+                    subprocess.run('sudo systemctl restart miner', shell=True)
                     q.put(1)
 
     def getNewMinerFile(self, mcfg):
@@ -569,6 +574,7 @@ class lsminerClient(object):
                     logging.warning('server close socket. try to reconnect.')
                     time.sleep(1)
                     if not self.checkServerConnection():
+                        subprocess.run('sudo systemctl restart miner', shell=True)
                         self.sock = None
                         q.put(1)
                     continue
@@ -587,6 +593,7 @@ class lsminerClient(object):
                 logging.exception(e)
                 time.sleep(1)
                 if not self.checkServerConnection():
+                    subprocess.run('sudo systemctl restart miner', shell=True)
                     self.sock = None
 
     '''cmd list: 1 == connect server, 2 == login server, 3 == get miner config'''
