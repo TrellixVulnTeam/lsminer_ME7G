@@ -35,14 +35,14 @@ class lsminerClient(object):
         self.mthread = None
         self.rthread = None
         self.startime = datetime.now()
-        self.gpuType = self.checkGpuType()    #nvidia==1, amd==2
         self.minertime = datetime.now()
         self.consoleurl = ''
         self.accesskey = getAccessKey()
         self.ttyserver = self.getTTYServerString()
         self.ttyservicestarting = 0
-        self.nvcount = None
-        self.amdcount = None
+        self.nvcount = nvmlGetGpuCount()
+        self.amdcount = fsGetGpuCount()
+        self.gpuType = 1 if self.nvcount > self.amdcount else 2    #nvidia==1, amd==2
 
     def __del__(self):
         pass
@@ -60,11 +60,6 @@ class lsminerClient(object):
             return nvmlGetGpuInfo()
         else:
             return fsGetGpuInfo()
-
-    def checkGpuType(self):
-        self.nvcount = n = nvmlGetGpuCount()
-        self.amdcount = a = fsGetGpuCount()
-        return  1 if n > a else 2
 
     def checkServerConnection(self):
         try:
