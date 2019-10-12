@@ -513,6 +513,8 @@ class lsminerClient(object):
         
         #overclock get over clocl args by environment variables
         os.system('/home/lsminer/lsminer/overclock')
+        #get miner args will restart miner
+        q.put(3)
         #with os.popen('/home/lsminer/lsminer/overclock') as p:
         #    netlines = p.read().splitlines(False)
         #    print(netlines)

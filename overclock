@@ -163,6 +163,6 @@ fi
 
 sync
 
-sudo systemctl restart miner.service
+#sudo systemctl restart miner.service
 
 exit 0
