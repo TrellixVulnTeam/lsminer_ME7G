@@ -483,13 +483,13 @@ class lsminerClient(object):
             temps += args[4] + ','
             fans += args[5] + ','
 
-        os.putenv('GPU_COUNT_NV', '0')
+        os.putenv('GPU_COUNT_NV', '')
         os.putenv('NV_CORE', '')
         os.putenv('NV_MEMORY', '')
         os.putenv('NV_POWER', '')
         os.putenv('NV_TEMP', '')
         os.putenv('NV_FAN', '')
-        os.putenv('GPU_COUNT_AMD', '0')
+        os.putenv('GPU_COUNT_AMD', '')
         os.putenv('AMD_CORE', '')
         os.putenv('AMD_MEMORY', '')
         os.putenv('AMD_POWER', '')
