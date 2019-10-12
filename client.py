@@ -483,13 +483,13 @@ class lsminerClient(object):
             temps += args[4] + ','
             fans += args[5] + ','
 
-        os.putenv('GPU_COUNT_NV', '')
+        os.putenv('GPU_COUNT_NV', '0')
         os.putenv('NV_CORE', '')
         os.putenv('NV_MEMORY', '')
         os.putenv('NV_POWER', '')
         os.putenv('NV_TEMP', '')
         os.putenv('NV_FAN', '')
-        os.putenv('GPU_COUNT_AMD', '')
+        os.putenv('GPU_COUNT_AMD', '0')
         os.putenv('AMD_CORE', '')
         os.putenv('AMD_MEMORY', '')
         os.putenv('AMD_POWER', '')
@@ -512,13 +512,14 @@ class lsminerClient(object):
             os.putenv('AMD_FAN', fans)
         
         #overclock get over clocl args by environment variables
-        os.system('/home/lsminer/lsminer/overclock')
+        #os.system('/home/lsminer/lsminer/overclock')
+        
+        with os.popen('/home/lsminer/lsminer/overclock') as p:
+            netlines = p.read().splitlines(False)
+            print(netlines)
+        
         #get miner args will restart miner
         q.put(3)
-        #with os.popen('/home/lsminer/lsminer/overclock') as p:
-        #    netlines = p.read().splitlines(False)
-        #    print(netlines)
-        
         #restart miner 
         #os.system('sudo systemctl restart miner')
 
