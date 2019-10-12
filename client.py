@@ -511,7 +511,7 @@ class lsminerClient(object):
         
         with os.popen('/home/lsminer/lsminer/overclock') as p:
             netlines = p.read().splitlines(False)
-            print(netlines)
+            logging.info(netlines)
         
         #get miner args will restart miner
         q.put(3)
