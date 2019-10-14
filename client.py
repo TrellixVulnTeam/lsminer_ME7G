@@ -499,12 +499,13 @@ class lsminerClient(object):
             os.putenv('NV_TEMP', temps)
             os.putenv('NV_FAN', fans)
         else:
-            os.putenv('GPU_COUNT_AMD', str(self.amdcount))
-            os.putenv('AMD_CORE', cores)
-            os.putenv('AMD_MEMORY', mems)
-            os.putenv('AMD_POWER', pows)
-            os.putenv('AMD_TEMP', temps)
-            os.putenv('AMD_FAN', fans)
+            pass
+            #os.putenv('GPU_COUNT_AMD', str(self.amdcount))
+            #os.putenv('AMD_CORE', cores)
+            #os.putenv('AMD_MEMORY', mems)
+            #os.putenv('AMD_POWER', pows)
+            #os.putenv('AMD_TEMP', temps)
+            #os.putenv('AMD_FAN', fans)
         
         #overclock get over clocl args by environment variables
         #os.system('/home/lsminer/lsminer/overclock')
