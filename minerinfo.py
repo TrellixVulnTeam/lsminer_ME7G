@@ -230,9 +230,10 @@ def getMinerStatus_TeamRedMiner(buf):
 		for sline in buf.split('|'):
 			if 'MHS av' in sline:
 				for l in sline.split(','):
-					hashrate = float(l.split('=')[1]) * 1000000
-					minerstatus['hashrate'].append(hashrate)
-					minerstatus['totalhashrate'] += float(hashrate)
+					if 'MHS av' in l:
+						hashrate = float(l.split('=')[1]) * 1000000
+						minerstatus['hashrate'].append(hashrate)
+						minerstatus['totalhashrate'] += float(hashrate)
 		return minerstatus
 	except Exception as e:
 		logging.error("function getMinerStatus_TeamRedMiner exception. msg: " + str(e))
