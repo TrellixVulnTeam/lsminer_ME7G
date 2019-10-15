@@ -43,6 +43,7 @@ class lsminerClient(object):
         self.nvcount = nvmlGetGpuCount()
         self.amdcount = fsGetGpuCount()
         self.gpuType = 1 if self.nvcount > self.amdcount else 2    #nvidia==1, amd==2
+        self.dog = 0
 
     def __del__(self):
         pass
@@ -216,6 +217,7 @@ class lsminerClient(object):
         thread = threading.Thread(target=lsminerClient.ttyshareProc, args=(self,))
         thread.start()
         q.put(2)
+        self.dog = 0
 
     def onLoginResp(self, msg):
         logging.info('recv server login msg: ' + str(msg))
@@ -267,6 +269,10 @@ class lsminerClient(object):
             try:
                 time.sleep(float(self.cfg['reportime']))
 
+                if self.dog > 1:
+                    logging.error("dog server connection exception. restart miner")
+                    os.system('sudo systemctl restart miner')
+
                 #check ttyshare connection
                 if not self.checkTTYServerConnection():
                     thread = threading.Thread(target=lsminerClient.ttyshareProc, args=(self,))
@@ -283,6 +289,7 @@ class lsminerClient(object):
                 logging.info(reqData)
                 if self.sock:
                     self.sock.sendall(reqData.encode('utf-8'))
+                    self.dog += 1
                 else:
                     logging.warning('socket unusable.')
                     time.sleep(1)
@@ -442,6 +449,7 @@ class lsminerClient(object):
 
     def onReportResp(self, msg):
         logging.info('recv server report msg: ' + str(msg))
+        self.dog -= 1
 
     def onUpdateMinerArgs(self, msg):
         logging.info('recv server update miner args msg: ' + str(msg))
