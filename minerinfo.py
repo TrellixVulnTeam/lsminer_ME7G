@@ -249,7 +249,7 @@ def getMinerStatus_ZEnemyMiner(buf):
 		for sline in buf.split('|'):
 			for l in sline.split(';'):
 				if 'KHS=' in l:
-					hashrate = float(l.split('=')[1])
+					hashrate = float(l.split('=')[1]) * 1000.0
 					minerstatus['hashrate'].append(hashrate)
 					minerstatus['totalhashrate'] += float(hashrate)
 		return minerstatus
