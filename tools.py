@@ -115,6 +115,7 @@ def getWkid():
 def getReboot(url):
     '''检测是否需要重启系统'''
     try:
+        logging.info("checking reboot")
         req = request.Request(url)
         with request.urlopen(req) as f:
             return int(f.read().decode('utf-8'))
