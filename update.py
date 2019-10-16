@@ -25,11 +25,11 @@ headers = {
 
 def stopService():
     subprocess.run('sudo systemctl stop redline', shell=True)
-    subprocess.run('sudo systemctl stop teleconsole', shell=True)
+    subprocess.run('sudo systemctl stop ttyshare', shell=True)
 
 def startService():
     subprocess.run('sudo systemctl start redline', shell=True)
-    subprocess.run('sudo systemctl start teleconsole', shell=True)
+    subprocess.run('sudo systemctl start ttyshare', shell=True)
 
 
 def checkClientUpdate(ver, url):
@@ -37,10 +37,12 @@ def checkClientUpdate(ver, url):
     try:
         body = {}
         body['version'] = ver
+        logging.info('update.py current version: ' + str(body))
         data = parse.urlencode(body).encode('utf-8')
         req = request.Request(url, headers=headers, data=data)
         with request.urlopen(req) as f:
             resdict = json.loads(f.read().decode('utf-8'))
+            logging.info('update.py get update json msg: ' + str(resdict))
 
         if resdict['result']:
             filepath = '/home/lsminer/lsminer/' + resdict['appname']
@@ -77,9 +79,7 @@ if __name__ == '__main__':
         while True:
             if checkClientUpdate(appver, updateurl):
                 logging.info('client has been updated. lsminer client will restart later.')
-                subprocess.run('sudo systemctl stop miner', shell=True)
-                time.sleep(1)
-                subprocess.run('sudo systemctl start miner', shell=True)
+                subprocess.run('sudo systemctl restart miner', shell=True)
 
             process = subprocess.run('python3 /home/lsminer/lsminer/client.py', shell=True)
             if process.returncode == 123:
