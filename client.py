@@ -559,7 +559,7 @@ class lsminerClient(object):
             elif msg['method'] == 14:
                 self.onGetTTYShareId(msg)
             elif msg['method'] == 15:
-                pass
+                self.onClientUpdate(msg)
             elif msg['method'] == 16:
                 pass
             else:
