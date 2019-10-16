@@ -46,7 +46,7 @@ def checkClientUpdate(ver, url):
             filepath = '/home/lsminer/lsminer/' + resdict['appname']
             while True:
                 if downloadFile(resdict['appurl'], filepath):
-                    if resdict(getFileMd5(filepath)) == resdict['appmd5']:
+                    if getFileMd5(filepath) == resdict['appmd5'].lower():
                         logging.info('file download ok.')
                         stopService()
                         with tarfile.open(filepath) as tar:
