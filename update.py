@@ -47,8 +47,8 @@ def checkClientUpdate(ver, url):
             while True:
                 if downloadFile(resdict['appurl'], filepath):
                     logging.info(getFileMd5(filepath))
-                    logging.info(resdict['appmd5'].lower())
-                    if getFileMd5(filepath) == resdict['appmd5'].lower():
+                    logging.info(resdict['appmd5'])
+                    if getFileMd5(filepath) == resdict['appmd5']:
                         logging.info('file download ok.')
                         stopService()
                         with tarfile.open(filepath) as tar:
