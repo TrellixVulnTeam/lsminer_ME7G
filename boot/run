@@ -36,7 +36,7 @@ function intro()
 #buckup amd tables
 [ -d "/run/lsminer/amd_tables" ] && sudo rm -rf /run/lsminer/amd_tables
 
-sudo mkdir /run/lsminer
+#sudo mkdir /run/lsminer
 if [ "$(lspci | grep -E "VGA|3D controller" | grep AMD | wc -l)" -gt 0 ]; then	
 
 	sudo mkdir /run/lsminer/amd_tables
