@@ -48,6 +48,12 @@ def checkClientUpdate(ver, url):
                 if downloadFile(resdict['appurl'], filepath):
                     logging.info(getFileMd5(filepath))
                     logging.info(resdict['appmd5'])
+                    logging.info(type(getFileMd5(filepath)))
+                    logging.info(type(resdict['appmd5']))
+                    if getFileMd5(filepath) == resdict['appmd5']:
+                        logging.info('123123')
+                    else:
+                        logging.info('gg')
                     if getFileMd5(filepath) == resdict['appmd5']:
                         logging.info('file download ok.')
                         stopService()
