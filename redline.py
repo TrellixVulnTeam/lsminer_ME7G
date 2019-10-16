@@ -8,6 +8,7 @@ logging.basicConfig(level = logging.INFO, format = '%(asctime)s - %(name)s - %(l
 while True:
     try:
         url = 'http://api.lsminer.com:37124/redline/' + getWkid()
+        logging.info(url)
         reboot = getReboot(url)
         if reboot:
             logging.warning('recv reboot cmd! system will be reboot.')
