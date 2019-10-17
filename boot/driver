@@ -2,6 +2,8 @@
 
 cd /home/lsminer/lsminer
 
+sudo rm -rf /home/lsminer/lsminer/*.log
+
 [ -f "/etc/X11/xorg.conf" ] && rm -rf /etc/X11/xorg.conf
 
 IGPU=$(lspci | grep -E "VGA|3D controller" | head -n 1 | grep -vE "NVIDIA|AMD" | wc -l)
