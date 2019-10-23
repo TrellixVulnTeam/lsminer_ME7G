@@ -114,6 +114,20 @@ class lsminerClient(object):
             time.sleep(3)
             q.put(1)
     
+    def GenerateAMDdeviceID(gpuinfo)
+        gpustatus = ""
+        try:
+            if gpuinfo:
+                mc = len(gpuinfo)
+                for i in range(len(gpuinfo)):
+                    if i < mc:
+                        gpustatus += gpuinfo[i]['name'] + '$'
+                    else:
+                        gpustatus += gpuinfo[i]['name']
+        except Exception as e:
+            logging.error('generate amd device id error:'+str(e))
+        return gpustatus
+    
     def sendLoginReq(self):
         try:
             if self.gpuType == 1:
@@ -121,8 +135,8 @@ class lsminerClient(object):
                 name = nvmlGetGpuName()
             else:
                 cnt = fsGetGpuCount()
-                name = fsGetGpuName()
-            
+                name = GenerateAMDdeviceID(self.getGpuInfo())#fsGetGpuName()
+            logging.info('GGGGGGGGGGGGGGGGGGGGGGGGG'+name)
             reqData = {}
             reqData['method'] = 1
             reqData['accesskey'] = self.accesskey
@@ -145,7 +159,8 @@ class lsminerClient(object):
             reqData['os'] = self.cfg['os']
             reqjson = json.dumps(reqData)
             reqjson += '\r\n'
-            logging.info('lsminerClient send login request.')
+            logging.info('lsminerClient send 
+                         request.')
             logging.info(reqjson)
             self.sock.sendall(reqjson.encode("utf-8"))
         except Exception as e:
