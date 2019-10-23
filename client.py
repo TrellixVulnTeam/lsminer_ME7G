@@ -120,7 +120,7 @@ class lsminerClient(object):
             if gpuinfo:
                 mc = len(gpuinfo)
                 for i in range(len(gpuinfo)):
-                    if i < mc:
+                    if i < mc-1:
                         gpustatus += gpuinfo[i]['name'] + '$'
                     else:
                         gpustatus += gpuinfo[i]['name']
