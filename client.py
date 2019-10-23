@@ -114,7 +114,7 @@ class lsminerClient(object):
             time.sleep(3)
             q.put(1)
     
-    def GenerateAMDdeviceID(self,gpuinfo)
+    def GenerateAMDdeviceID(self,gpuinfo):
         gpustatus = ""
         try:
             if gpuinfo:
