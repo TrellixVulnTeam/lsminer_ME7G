@@ -200,11 +200,10 @@ def fsGetGpuInfo():
         for i in range(count[0]):
             deviceinfo = {}
             #if bname:
-                deviceinfo['name'] = bname[i] + '|'
+            deviceinfo['name'] = bname[i] + '|'
             #else:
-                lib.wrap_amdsysfs_get_vid_pid_subsysid(fsHandle, i, name, 128)
-                deviceinfo['name'] += ffi.string(name).decode().strip()
-            
+            lib.wrap_amdsysfs_get_vid_pid_subsysid(fsHandle, i, name, 128)
+            deviceinfo['name'] += ffi.string(name).decode().strip()
             lib.wrap_amdsysfs_get_tempC(fsHandle, i, tempC)
             deviceinfo['tempC'] = tempC[0]
             lib.wrap_amdsysfs_get_fanpcnt(fsHandle, i, fanpcnt)
