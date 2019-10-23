@@ -159,8 +159,7 @@ class lsminerClient(object):
             reqData['os'] = self.cfg['os']
             reqjson = json.dumps(reqData)
             reqjson += '\r\n'
-            logging.info('lsminerClient send 
-                         request.')
+            logging.info('lsminerClient send login request.')
             logging.info(reqjson)
             self.sock.sendall(reqjson.encode("utf-8"))
         except Exception as e:
