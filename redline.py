@@ -13,7 +13,7 @@ while True:
         reboot = getReboot(url)
         if reboot:
             logging.warning('recv reboot cmd! system will be reboot.')
-            #os.system("sudo reboot")
+            os.system("sudo reboot")
         else:
             print('sleep 60 seconds. and check reboot cmd.')
             time.sleep(60)
