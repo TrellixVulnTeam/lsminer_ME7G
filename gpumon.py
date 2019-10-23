@@ -196,7 +196,7 @@ def fsGetGpuInfo():
         tempC = ffi.new("unsigned int*", 0)
         fanpcnt = ffi.new("unsigned int*", 0)
         power_usage = ffi.new("unsigned int*", 0)
-        bname = None #getBoardName()
+        bname = getBoardName()
         for i in range(count[0]):
             deviceinfo = {}
             #if bname:
