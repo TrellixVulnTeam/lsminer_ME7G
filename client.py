@@ -113,7 +113,7 @@ class lsminerClient(object):
             logging.exception(e)
             time.sleep(3)
             q.put(1)
-    
+            
     def GenerateAMDdeviceID(self, gpuinfo):
         gpustatus = ""
         try:
@@ -135,7 +135,7 @@ class lsminerClient(object):
                 name = nvmlGetGpuName()
             else:
                 cnt = fsGetGpuCount()
-                name = self.GenerateAMDdeviceID(self.getGpuInfo())#fsGetGpuName()
+                name = self.GenerateAMDdeviceID(fsGetGpuInfo())#fsGetGpuName()
             logging.info('GGGGGGGGGGGGGGGGGGGGGGGGG'+name)
             reqData = {}
             reqData['method'] = 1
