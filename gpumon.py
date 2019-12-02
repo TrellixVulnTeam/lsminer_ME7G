@@ -23,6 +23,8 @@ ffi.cdef('''
     int wrap_adl_get_tempC(wrap_adl_handle* adlh, int gpuindex, unsigned int* tempC);
     int wrap_adl_get_fanpcnt(wrap_adl_handle* adlh, int gpuindex, unsigned int* fanpcnt);
     int wrap_adl_get_power_usage(wrap_adl_handle* adlh, int gpuindex, unsigned int* milliwatts);
+    int wrap_nvml_get_current_clock(wrap_nvml_handle* nvmlh, int gpuindex, unsigned int *CoreClock, unsigned int *MemoryClock);
+    int wrap_nvml_get_base_clock(wrap_nvml_handle* nvmlh, int gpuindex, unsigned int *CoreClock, unsigned int *MemoryClock);
 
     typedef void wrap_amdsysfs_handle;
     wrap_amdsysfs_handle* wrap_amdsysfs_create();
@@ -33,6 +35,7 @@ ffi.cdef('''
     int wrap_amdsysfs_get_power_usage(wrap_amdsysfs_handle* sysfsh, int index, unsigned int* milliwatts);
     int wrap_amdsysfs_get_gpu_pci(wrap_amdsysfs_handle* sysfsh, int index, char* pcibuf, int bufsize);
     int wrap_amdsysfs_get_vid_pid_subsysid(wrap_amdsysfs_handle* sysfsh, int index, char* buf, int bufsize);
+    int wrap_amdsysfs_get_clock(wrap_amdsysfs_handle* sysfsh, int index, unsigned int *baseCoreClock, unsigned int *baseMemoryClock, unsigned int *coreClock, unsigned int *memoryClock);
 
 ''')
 
@@ -95,6 +98,31 @@ def nvmlGetGpuInfo():
         ffi.release(power_usage)
     return info
 
+def nvmlGetGpuClock():
+    info = []
+    if nvHandle:
+        count = ffi.new("int*", 0)
+        lib.wrap_nvml_get_gpucount(nvHandle, count)
+        baseCoreClock = ffi.new("unsigned int*", 0)
+        baseMemoryClock = ffi.new("unsigned int*", 0)
+        currentCoreClock = ffi.new("unsigned int*", 0)
+        currentMemoryClock = ffi.new("unsigned int*", 0)
+        for i in range(count[0]):
+            deviceinfo = {}
+            lib.wrap_nvml_get_base_clock(nvHandle, i, baseCoreClock, baseMemoryClock)
+            deviceinfo['baseCoreClock'] = baseCoreClock[0]
+            deviceinfo['baseMemoryClock'] = baseMemoryClock[0]
+            lib.wrap_nvml_get_current_clock(nvHandle, i, currentCoreClock, currentMemoryClock)
+            deviceinfo['currentCoreClock'] = currentCoreClock[0]
+            deviceinfo['currentMemoryClock'] = currentMemoryClock[0]
+            info.append(deviceinfo)
+        ffi.release(count)
+        ffi.release(baseCoreClock)
+        ffi.release(baseMemoryClock)
+        ffi.release(currentCoreClock)
+        ffi.release(currentMemoryClock)
+    return info
+    
 def amdGetGpuCount():
     gpuCount = 0
     if amdHandle:
@@ -121,7 +149,7 @@ def amdGetGpuInfo():
     info = []
     if amdHandle:
         count = ffi.new("int*", 0)
-        lib.wrap_adl_get_gpucount(amdHandle, count)
+        lib.wrap_adl_get_gpucount(amdHandle, count)        
         name = ffi.new("char[128]")
         tempC = ffi.new("unsigned int*", 0)
         fanpcnt = ffi.new("unsigned int*", 0)
@@ -184,6 +212,7 @@ def getBoardName():
         for l in pci:
             if 'Board name:' in l:
                 name = l.split(':')[1].strip()
+                print(name)
                 boardname.append(name)
     return boardname
 
@@ -192,6 +221,7 @@ def fsGetGpuInfo():
     if fsHandle:
         count = ffi.new("int*", 0)
         lib.wrap_amdsysfs_get_gpucount(fsHandle, count)
+        print(count[0])
         name = ffi.new("char[128]")
         tempC = ffi.new("unsigned int*", 0)
         fanpcnt = ffi.new("unsigned int*", 0)
@@ -218,8 +248,35 @@ def fsGetGpuInfo():
         ffi.release(power_usage)
     return info
 
+def fsGetGpuClock():
+    info = []
+    if nvHandle:
+        count = ffi.new("int*", 0)
+        lib.wrap_amdsysfs_get_gpucount(fsHandle, count)
+        print(count[0])
+        baseCoreClock = ffi.new("unsigned int*", 0)
+        baseMemoryClock = ffi.new("unsigned int*", 0)
+        currentCoreClock = ffi.new("unsigned int*", 0)
+        currentMemoryClock = ffi.new("unsigned int*", 0)
+        for i in range(count[0]):
+            deviceinfo = {}
+            lib.wrap_amdsysfs_get_clock(fsHandle, i, baseCoreClock, baseMemoryClock, currentCoreClock, currentMemoryClock)
+            deviceinfo['baseCoreClock'] = baseCoreClock[0]
+            deviceinfo['baseMemoryClock'] = baseMemoryClock[0]
+            deviceinfo['currentCoreClock'] = currentCoreClock[0]
+            deviceinfo['currentMemoryClock'] = currentMemoryClock[0]
+            info.append(deviceinfo)
+        ffi.release(count)
+        ffi.release(baseCoreClock)
+        ffi.release(baseMemoryClock)
+        ffi.release(currentCoreClock)
+        ffi.release(currentMemoryClock)
+    return info
+    
 if __name__ == '__main__':
     print(amdGetGpuInfo())
-    print(nvmlGetGpuInfo())
-    print(fsGetGpuInfo())
+    #print(nvmlGetGpuInfo())
+    print(fsGetGpuInfo())    
+    #print(nvmlGetGpuClock())
+    print(fsGetGpuClock())
     pass

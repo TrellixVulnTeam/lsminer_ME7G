@@ -46,6 +46,16 @@ typedef struct
     unsigned int res3;
 } wrap_nvmlPciInfo_t;
 
+//! \ingroup gpuclock
+typedef enum _nvmlClockType_t
+{
+	NVML_CLOCK_GRAPHICS = 0,
+	NVML_CLOCK_SM = 1,
+	NVML_CLOCK_MEM = 2,
+	NVML_CLOCK_VIDEO = 3,
+	NVML_CLOCK_COUNT
+} nvmlClockType_t;
+
 
 /*
  * Handle to hold the function pointers for the entry points we need,
@@ -68,7 +78,11 @@ typedef struct
     wrap_nvmlReturn_t (*nvmlDeviceGetFanSpeed)(wrap_nvmlDevice_t, unsigned int*);
     wrap_nvmlReturn_t (*nvmlDeviceGetPowerUsage)(wrap_nvmlDevice_t, unsigned int*);
     wrap_nvmlReturn_t (*nvmlShutdown)(void);
+    
+    wrap_nvmlReturn_t (*nvmlDeviceGetClockInfo)(wrap_nvmlDevice_t device, nvmlClockType_t type, unsigned int* clock);
+    wrap_nvmlReturn_t (*nvmlDeviceGetMaxClockInfo)(wrap_nvmlDevice_t device, nvmlClockType_t type, unsigned int* clock);    
 } wrap_nvml_handle;
+
 
 
 wrap_nvml_handle* wrap_nvml_create();
@@ -104,7 +118,9 @@ int wrap_nvml_get_fanpcnt(wrap_nvml_handle* nvmlh, int gpuindex, unsigned int* f
  */
 int wrap_nvml_get_power_usage(wrap_nvml_handle* nvmlh, int gpuindex, unsigned int* milliwatts);
 
+int wrap_nvml_get_current_clock(wrap_nvml_handle* nvmlh, int gpuindex, unsigned int *CoreClock, unsigned int *MemoryClock);
 
+int wrap_nvml_get_base_clock(wrap_nvml_handle* nvmlh, int gpuindex, unsigned int *CoreClock, unsigned int *MemoryClock);
 #if defined(__cplusplus)
 }
 #endif

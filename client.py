@@ -62,6 +62,12 @@ class lsminerClient(object):
         else:
             return fsGetGpuInfo()
 
+    def getGpuClock(self):
+        if self.gpuType == 1:
+            return nvmlGetGpuClock()
+        else:
+            return fsGetGpuClock()
+
     def checkServerConnection(self):
         try:
             cs = self.cfg['ip'].strip() + ':' + str(self.cfg['port'])
@@ -127,6 +133,49 @@ class lsminerClient(object):
         except Exception as e:
             logging.error('generate amd device id error:'+str(e))
         return gpustatus
+
+    def getSystemMemInfo(self):
+        try:
+            f = open('/proc/meminfo', 'r')
+            for line in f:
+                if line.startswith('MemTotal:'):
+                    mem_total = int(line.split()[1])
+                elif line.startswith('MemFree:'):
+                    mem_free = int(line.split()[1])
+                elif line.startswith('Buffers:'):
+                    mem_buffer = int(line.split()[1])
+                elif line.startswith('Cached:'):
+                    mem_cache = int(line.split()[1])
+                elif line.startswith('SwapTotal:'):
+                    vmem_total = int(line.split()[1])
+                elif line.startswith('SwapFree:'):
+                    vmem_free = int(line.split()[1])
+                else:
+                    continue
+            f.close()
+        except:
+            return None
+        return vmem_total/1024, mem_total/1024
+
+    def getSystemDiskInfo(self):
+        statvfs = os.statvfs('/')
+        total_disk_space = statvfs.f_frsize * statvfs.f_blocks
+        free_disk_space = statvfs.f_frsize * statvfs.f_bfree
+        return free_disk_space/1024/1024, total_disk_space/1024/1024 
+    
+    def getSystemInfo(self):
+        reqData = {}
+        reqData['method'] = 18
+        mem_info = self.getSystemMemInfo()
+        reqData['vmemory'] = mem_info[0]
+        reqData['pmemory'] = mem_info[1]
+        disk_info = self.getSystemDiskInfo()
+        reqData['free'] = disk_info[0]
+        reqData['total'] = disk_info[1]            
+
+        reqjson = json.dumps(reqData)
+        reqjson += '\r\n'
+        return reqjson
     
     def sendLoginReq(self):
         try:
@@ -162,6 +211,12 @@ class lsminerClient(object):
             logging.info('lsminerClient send login request.')
             logging.info(reqjson)
             self.sock.sendall(reqjson.encode("utf-8"))
+
+            reqjson = self.getSystemInfo()
+            
+            logging.info('lsminerClient send system info.')
+            logging.info(reqjson)
+            self.sock.sendall(reqjson.encode("utf-8"))
         except Exception as e:
             logging.error('sendLoginReq exception. msg: ' + str(e))
             logging.exception(e)
@@ -169,7 +224,7 @@ class lsminerClient(object):
             if not self.checkServerConnection():
                 subprocess.run('sudo systemctl restart miner', shell=True)
                 self.sock = None
-            return None     
+            return None         
 
     def sendGetMinerArgsReq(self):
         try:
@@ -252,9 +307,12 @@ class lsminerClient(object):
             reqData['uptime'] = self.getMinerUptimeMinutes()
             reqData['minerstatus'] = 1
             gpuinfo = self.getGpuInfo()
+            print(gpuinfo)
+            gpuclock = self.getGpuClock()
+            print(gpuclock)
             if gpuinfo:
                 minerinfo = getMinerStatus(mcfg)
-                gpustatus = ""
+                gpustatus = ""                
                 if not minerinfo:
                     reqData['hashrate'] = 0
                     for i in range(len(gpuinfo)):
@@ -267,12 +325,17 @@ class lsminerClient(object):
                         if i < mc:
                             gpustatus += str(i) + '|'+ gpuinfo[i]['name'] + '|' + str(gpuinfo[i]['tempC']) + '|' + str(minerinfo['hashrate'][i]) + '|' + str(gpuinfo[i]['fanpcnt']) + '|' + str(gpuinfo[i]['power_usage']) + '$'
                         else:
-                            gpustatus += str(i) + '|'+ gpuinfo[i]['name'] + '|' + str(gpuinfo[i]['tempC']) + '|0|' + str(gpuinfo[i]['fanpcnt']) + '|' + str(gpuinfo[i]['power_usage']) + '$'
-                        
+                            gpustatus += str(i) + '|'+ gpuinfo[i]['name'] + '|' + str(gpuinfo[i]['tempC']) + '|0|' + str(gpuinfo[i]['fanpcnt']) + '|' + str(gpuinfo[i]['power_usage']) + '$'                            
                 gpustatus += str(self.getClientUptimeMinutes())
-                reqData['gpustatus'] = gpustatus
-                reqData = json.dumps(reqData) + '\r\n'
-                return reqData
+                reqData['gpustatus'] = gpustatus           
+            if gpuclock:
+                gpuclockinfo = ""
+                for i in range(len(gpuclock)):
+                    gpuclockinfo += str(i) + '||'+ str(gpuclock[i]['baseCoreClock']) + '|' + str(gpuclock[i]['currentCoreClock']) + '|' + str(gpuclock[i]['baseMemoryClock']) + '|' + str(gpuclock[i]['currentMemoryClock']) + '$'
+                reqData['gpuinfo'] = gpuclockinfo
+               
+            reqData = json.dumps(reqData) + '\r\n'
+            return reqData
         except Exception as e:
             logging.error("function getReportData exception. msg: " + str(e))
             logging.exception(e)

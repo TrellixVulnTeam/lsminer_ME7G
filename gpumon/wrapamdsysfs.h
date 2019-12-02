@@ -54,6 +54,8 @@ int wrap_amdsysfs_get_gpu_pci(wrap_amdsysfs_handle* sysfsh, int index, char* pci
 
 int wrap_amdsysfs_get_vid_pid_subsysid(wrap_amdsysfs_handle* sysfsh, int index, char* buf, int bufsize);
 
+int wrap_amdsysfs_get_clock(wrap_amdsysfs_handle* sysfsh, int index, unsigned int *baseCoreClock, unsigned int *baseMemoryClock, unsigned int *coreClock, unsigned int *memoryClock);
+
 #if defined(__cplusplus)
 }
 #endif

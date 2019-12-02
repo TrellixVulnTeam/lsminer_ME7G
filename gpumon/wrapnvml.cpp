@@ -19,7 +19,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h>
 #include "wrapnvml.h"
 
 #if defined(__cplusplus)
@@ -88,6 +88,9 @@ wrap_nvml_handle* wrap_nvml_create()
     nvmlh->nvmlDeviceGetPowerUsage = (wrap_nvmlReturn_t(*)(
         wrap_nvmlDevice_t, unsigned int*))wrap_dlsym(nvmlh->nvml_dll, "nvmlDeviceGetPowerUsage");
     nvmlh->nvmlShutdown = (wrap_nvmlReturn_t(*)())wrap_dlsym(nvmlh->nvml_dll, "nvmlShutdown");
+    
+		nvmlh->nvmlDeviceGetClockInfo = (wrap_nvmlReturn_t(*)(wrap_nvmlDevice_t device, nvmlClockType_t type, unsigned int* clock))wrap_dlsym(nvmlh->nvml_dll, "nvmlDeviceGetClockInfo");		
+		nvmlh->nvmlDeviceGetMaxClockInfo = (wrap_nvmlReturn_t(*)(wrap_nvmlDevice_t device, nvmlClockType_t type, unsigned int* clock))wrap_dlsym(nvmlh->nvml_dll, "nvmlDeviceGetMaxClockInfo");
 
     if (nvmlh->nvmlInit == nullptr || nvmlh->nvmlShutdown == nullptr ||
         nvmlh->nvmlDeviceGetCount == nullptr || nvmlh->nvmlDeviceGetHandleByIndex == nullptr ||
@@ -190,6 +193,42 @@ int wrap_nvml_get_power_usage(wrap_nvml_handle* nvmlh, int gpuindex, unsigned in
         return -1;
 
     return 0;
+}
+
+int wrap_nvml_get_current_clock(wrap_nvml_handle* nvmlh, int gpuindex, unsigned int *CoreClock, unsigned int *MemoryClock)
+{
+  int result = nvmlh->nvmlDeviceGetClockInfo(nvmlh->devs[gpuindex], NVML_CLOCK_GRAPHICS, CoreClock);
+	
+	if (result != 0)
+	{
+		return 0;
+	}
+	
+	result = nvmlh->nvmlDeviceGetClockInfo(nvmlh->devs[gpuindex], NVML_CLOCK_MEM, MemoryClock);
+	
+	if (result != 0)
+	{
+		return 0;
+	}	
+	return 1;
+}
+
+int wrap_nvml_get_base_clock(wrap_nvml_handle* nvmlh, int gpuindex, unsigned int *CoreClock, unsigned int *MemoryClock)
+{
+	int result = nvmlh->nvmlDeviceGetMaxClockInfo(nvmlh->devs[gpuindex], NVML_CLOCK_GRAPHICS, CoreClock);
+	
+	if (result != 0)
+	{
+		return 0;
+	}
+	
+	result = nvmlh->nvmlDeviceGetMaxClockInfo(nvmlh->devs[gpuindex], NVML_CLOCK_MEM, MemoryClock);
+	
+	if (result != 0)
+	{
+		return 0;
+	}	
+	return 1;
 }
 
 #if defined(__cplusplus)

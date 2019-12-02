@@ -371,3 +371,71 @@ int wrap_amdsysfs_get_vid_pid_subsysid(wrap_amdsysfs_handle* sysfsh, int index, 
 
     return 0;
 }
+
+int wrap_amdsysfs_get_clock(wrap_amdsysfs_handle* sysfsh, int index, unsigned int *baseCoreClock, unsigned int *baseMemoryClock, unsigned int *coreClock, unsigned int *memoryClock)
+{
+		try
+    {
+        if (index < 0 || index >= sysfsh->sysfs_gpucount)
+            return -1;
+
+        int gpuindex = sysfsh->sysfs_device_id[index];
+
+        char dbuf[120];
+        snprintf(dbuf, 120, "/sys/kernel/debug/dri/%d/amdgpu_pm_info", gpuindex);
+
+        std::ifstream ifs(dbuf, std::ios::binary);
+        std::string line;
+
+        while (std::getline(ifs, line))
+        {
+            std::smatch sm;
+            std::regex regex1(R"(([\d|\.]+) MHz \(MCLK\))");
+            if (std::regex_search(line, sm, regex1))
+            {
+                if (sm.size() == 2)
+                {
+                    *memoryClock = atoi(sm.str(1).c_str());
+                    //printf("1 %s\n", sm.str(1).c_str());
+                }
+                continue;
+            }
+            std::regex regex2(R"(([\d|\.]+) MHz \(SCLK\))");
+            if (std::regex_search(line, sm, regex2))
+            {
+                if (sm.size() == 2)
+                {
+                    *coreClock = atoi(sm.str(1).c_str());
+                    //printf("2 %s\n", sm.str(1).c_str());
+                }
+                continue;
+            }
+            std::regex regex3(R"(([\d|\.]+) MHz \(PSTATE_SCLK\))");
+            if (std::regex_search(line, sm, regex3))
+            {
+                if (sm.size() == 2)
+                {
+                    *baseCoreClock = atoi(sm.str(1).c_str());
+                    //printf("3 %s\n", sm.str(1).c_str());
+                }
+                continue;
+            }
+            std::regex regex4(R"(([\d|\.]+) MHz \(PSTATE_MCLK\))");
+            if (std::regex_search(line, sm, regex4))
+            {
+                if (sm.size() == 2)
+                {
+                    *baseMemoryClock = atoi(sm.str(1).c_str());
+                    //printf("4 %s\n", sm.str(1).c_str());
+                }
+                continue;
+            }
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        cwarn << "Error in wrap_amdsysfs_get_clock: " << ex.what();
+    }
+
+    return -1;
+}
