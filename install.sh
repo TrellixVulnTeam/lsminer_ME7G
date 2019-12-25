@@ -50,6 +50,9 @@ echo ""
 sudo chown -R lsminer:lsminer /home/lsminer/*
 sudo chown -R root:root /etc/*
 
+#link the nvoc 
+ln -s /home/lsminer/lsminer/oc/runnvoc /usr/bin/runnvoc
+
 echo "Finished!"
 echo ---------------------------
 echo ">> Please REBOOT to apply changes of new version."
